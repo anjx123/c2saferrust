@@ -1,3 +1,4 @@
+
 use ::libc;
 extern "C" {
     fn memset(
@@ -33,13 +34,12 @@ pub union C2RustUnnamed {
 pub type mbstate_t = __mbstate_t;
 pub type char32_t = __uint_least32_t;
 #[inline]
-unsafe extern "C" fn mbszero(mut ps: *mut mbstate_t) {
-    memset(
-        ps as *mut libc::c_void,
-        0 as libc::c_int,
-        ::core::mem::size_of::<mbstate_t>() as libc::c_ulong,
-    );
+fn mbszero(ps: &mut mbstate_t) {
+    let size = std::mem::size_of::<mbstate_t>();
+    let bytes: &mut [u8] = unsafe { std::slice::from_raw_parts_mut(ps as *mut _ as *mut u8, size) };
+    bytes.fill(0);
 }
+
 static mut internal_state: mbstate_t = mbstate_t {
     __count: 0,
     __value: C2RustUnnamed { __wch: 0 },
@@ -61,7 +61,7 @@ pub unsafe extern "C" fn rpl_mbrtoc32(
     }
     let mut ret: size_t = mbrtoc32(pwc, s, n, ps);
     if ret < -(3 as libc::c_int) as size_t && mbsinit(ps) == 0 {
-        mbszero(ps);
+        mbszero(&mut *ps);
     }
     if ret == -(3 as libc::c_int) as size_t {
         abort();

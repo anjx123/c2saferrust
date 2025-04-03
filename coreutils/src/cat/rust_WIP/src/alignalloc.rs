@@ -1,6 +1,7 @@
 use std::boxed::Box;
 
 use std::alloc;
+use std::slice;
 
 use ::libc;
 extern "C" {
@@ -26,12 +27,11 @@ pub fn alignalloc(alignment: usize, size: usize) -> Option<Box<[u8]>> {
         usize::MAX
     };
 
-    let layout = std::alloc::Layout::from_size_align(size, alignment).ok()?;
-    let ptr = unsafe { std::alloc::alloc(layout) };
+    let ptr = unsafe { std::alloc::alloc(std::alloc::Layout::from_size_align(size, alignment).unwrap()) };
     if ptr.is_null() {
         None
     } else {
-        Some(unsafe { Box::from_raw(std::slice::from_raw_parts_mut(ptr, size)) })
+        Some(unsafe { Box::from_raw(std::slice::from_raw_parts_mut(ptr as *mut u8, size)) })
     }
 }
 
@@ -39,6 +39,7 @@ pub fn alignalloc(alignment: usize, size: usize) -> Option<Box<[u8]>> {
 #[inline]
 #[linkage = "external"]
 pub fn alignfree(ptr: Box<dyn std::any::Any>) {
+    // Box will automatically free the memory when it goes out of scope
     drop(ptr);
 }
 

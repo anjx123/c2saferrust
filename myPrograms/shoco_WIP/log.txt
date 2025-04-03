@@ -1,0 +1,7 @@
+DefId(0:45 ~ oxidate_out[187d]::check_indices) Chunk root, Failure, 5
+DefId(0:47 ~ oxidate_out[187d]::shoco_compress) Chunk root, Success, 3
+DefId(0:49 ~ oxidate_out[187d]::shoco_decompress) Chunk root, Success, 2
+DefId(0:46 ~ oxidate_out[187d]::find_best_encoding) Chunk root, Failure, 5
+DefId(0:45 ~ oxidate_out[187d]::check_indices) Chunk root, Failure, 5
+DefId(0:44 ~ oxidate_out[187d]::decode_header) Chunk root, Success, 1
+DefId(0:50 ~ oxidate_out[187d]::main) Chunk root, Success, 1

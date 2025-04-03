@@ -22,21 +22,20 @@
 
 
 
-use std::vec::Vec;
+
 
 use std::boxed::Box;
 use std::clone::Clone;
 
-use std::option::Option;
-
-use std::char;
-
-use std::os::raw::c_char;
-
-use std::ffi::CStr;
-use std::convert::TryInto;
+use std::mem;
 
 use std::ffi::CString;
+
+use std::option::Option;
+
+use std::convert::TryInto;
+
+use std::ffi::CStr;
 
 use ::libc;
 extern "C" {
@@ -141,8 +140,8 @@ pub const _ISalpha: C2RustUnnamed_0 = 1024;
 pub const _ISlower: C2RustUnnamed_0 = 512;
 pub const _ISupper: C2RustUnnamed_0 = 256;
 #[inline]
-fn c32isprint(wc: u32) -> i32 {
-    char::from_u32(wc).map_or(0, |c| c.is_ascii() as i32)
+fn c32isprint(wc: wint_t) -> libc::c_int {
+    unsafe { iswprint(wc) }
 }
 
 #[inline]
@@ -190,8 +189,8 @@ static mut default_quoting_options: quoting_options = quoting_options {
 #[no_mangle]
 pub fn clone_quoting_options(o: Option<&quoting_options>) -> Option<Box<quoting_options>> {
     let options = o.unwrap_or_else(|| unsafe { &default_quoting_options });
-    let cloned_options = options.clone();
-    Some(Box::new(cloned_options))
+    let cloned_options = Box::new(options.clone());
+    Some(cloned_options)
 }
 
 #[no_mangle]
@@ -205,13 +204,10 @@ pub fn get_quoting_style(o: Option<&quoting_options>) -> quoting_style {
 
 #[no_mangle]
 pub fn set_quoting_style(
-    o: Option<&mut quoting_options>,
+    mut o: Option<Box<quoting_options>>,
     s: quoting_style,
 ) {
-    let options = match o {
-        Some(opts) => opts,
-        None => unsafe { &mut default_quoting_options },
-    };
+    let options = o.get_or_insert_with(|| Box::new(unsafe { default_quoting_options }));
     options.style = s;
 }
 
@@ -222,10 +218,7 @@ pub fn set_char_quoting(
     i: i32,
 ) -> i32 {
     let uc: u8 = c as u8;
-    let options = match o {
-        Some(opts) => opts,
-        None => unsafe { &mut default_quoting_options },
-    };
+    let options = o.unwrap_or_else(|| unsafe { &mut default_quoting_options });
     let index = (uc as usize) / (std::mem::size_of::<u32>() * 8);
     let shift = (uc as usize) % (std::mem::size_of::<u32>() * 8);
     
@@ -238,43 +231,30 @@ pub fn set_char_quoting(
 
 #[no_mangle]
 pub fn set_quoting_flags(
-    mut o: Option<&mut quoting_options>,
-    mut i: libc::c_int,
+    o: Option<&mut quoting_options>,
+    i: libc::c_int,
 ) -> libc::c_int {
-    let mut r: libc::c_int = 0;
-    let options: &mut quoting_options;
-
-    if let Some(opts) = o {
-        options = opts;
-    } else {
-        options = unsafe { &mut default_quoting_options };
-    }
-
-    r = options.flags;
+    let options: &mut quoting_options = match o {
+        Some(opt) => opt,
+        None => unsafe { &mut default_quoting_options },
+    };
+    let r = options.flags;
     options.flags = i;
-    return r;
+    r
 }
 
 #[no_mangle]
 pub fn set_custom_quoting(
-    o: *mut quoting_options,
-    left_quote: *const libc::c_char,
-    right_quote: *const libc::c_char,
+    mut o: Option<&mut quoting_options>,
+    left_quote: &CStr,
+    right_quote: &CStr,
 ) {
-    let o = if o.is_null() {
-        unsafe { &mut default_quoting_options }
-    } else {
-        unsafe { &mut *o }
-    };
-    
+    let o = o.get_or_insert(unsafe { &mut default_quoting_options });
     o.style = custom_quoting_style;
 
-    if left_quote.is_null() || right_quote.is_null() {
-        panic!("Quotes cannot be null");
-    }
-
-    o.left_quote = left_quote;
-    o.right_quote = right_quote;
+    // Since CStr cannot be null, we can skip the null check.
+    o.left_quote = left_quote.as_ptr();
+    o.right_quote = right_quote.as_ptr();
 }
 
 fn quoting_options_from_style(style: quoting_style) -> quoting_options {
@@ -286,7 +266,7 @@ fn quoting_options_from_style(style: quoting_style) -> quoting_options {
         right_quote: std::ptr::null(),
     };
 
-    if style == custom_quoting_style {
+    if style as u32 == custom_quoting_style as i32 as u32 {
         panic!("Custom quoting style is not allowed");
     }
 
@@ -294,38 +274,42 @@ fn quoting_options_from_style(style: quoting_style) -> quoting_options {
     o
 }
 
-fn gettext_quote(msgid: &str, s: quoting_style) -> String {
-    let translation = unsafe { std::ffi::CStr::from_ptr(gettext(msgid.as_ptr() as *const libc::c_char)) }
-        .to_string_lossy()
-        .into_owned();
-    let locale_code = unsafe { std::ffi::CStr::from_ptr(locale_charset()) }
-        .to_string_lossy()
-        .into_owned();
-    
+fn gettext_quote(msgid: &str, s: quoting_style) -> &'static str {
+    let translation_c;
+    let locale_code_c;
+
+    unsafe {
+        translation_c = gettext(msgid.as_ptr() as *const libc::c_char);
+        locale_code_c = locale_charset();
+    }
+
+    let translation = unsafe { CStr::from_ptr(translation_c).to_string_lossy().into_owned() };
+    let locale_code = unsafe { CStr::from_ptr(locale_code_c).to_string_lossy() };
+
     if translation != msgid {
-        return translation;
+        return Box::leak(translation.into_boxed_str());
     }
-    
-    if unsafe { c_strcasecmp(locale_code.as_ptr() as *const libc::c_char, b"UTF-8\0".as_ptr() as *const libc::c_char) } == 0 {
-        return if msgid.chars().next() == Some('`') {
-            "\u{2018}".to_string() // Left single quotation mark
+
+    if locale_code.eq_ignore_ascii_case("UTF-8") {
+        return if msgid.starts_with('`') {
+            "\u{2018}" // Left single quotation mark
         } else {
-            "\u{2019}".to_string() // Right single quotation mark
+            "\u{2019}" // Right single quotation mark
         };
     }
-    
-    if unsafe { c_strcasecmp(locale_code.as_ptr() as *const libc::c_char, b"GB18030\0".as_ptr() as *const libc::c_char) } == 0 {
-        return if msgid.chars().next() == Some('`') {
-            "\u{A1}07e".to_string() // GB18030 left quote
+
+    if locale_code.eq_ignore_ascii_case("GB18030") {
+        return if msgid.starts_with('`') {
+            "\u{A1}e" // Specific character for GB18030
         } else {
-            "\u{A1}AF".to_string() // GB18030 right quote
+            "\u{A1}AF" // Specific character for GB18030
         };
     }
-    
-    if s as libc::c_uint == clocale_quoting_style as libc::c_int as libc::c_uint {
-        return "\"".to_string();
+
+    if s as u32 == clocale_quoting_style as u32 {
+        return "\"";
     } else {
-        return "'".to_string();
+        return "'";
     }
 }
 
@@ -467,37 +451,40 @@ unsafe extern "C" fn quotearg_buffer_restyled(
             (i == argsize) as libc::c_int
         } == 0
         {
-            let mut c: u8 = 0;
-let mut esc: u8 = 0;
-let mut is_right_quote: bool = false;
-let mut escaping: bool = false;
-let mut c_and_shell_quote_compat: bool = false;
-
-let arg_slice = unsafe { std::slice::from_raw_parts(arg as *const u8, argsize as usize) };
-
-if backslash_escapes
-    && quoting_style != shell_always_quoting_style
-    && quote_string_len != 0
-    && i + quote_string_len <= if argsize == u64::MAX && 1 < quote_string_len {
-        argsize = unsafe { libc::strlen(arg) } as u64; // Assuming arg is a C string
-        argsize
-    } else {
-        argsize
-    }
-    && &arg_slice[i as usize..(i + quote_string_len) as usize] == unsafe { std::slice::from_raw_parts(quote_string as *const u8, quote_string_len as usize) }
-{
-    if elide_outer_quotes {
-        current_block = 7928555609993211441;
-        break 's_25;
-    }
-    is_right_quote = true;
-}
-
-c = arg_slice[i as usize];
-
-match c {
-    0 => {
-         if backslash_escapes {
+            let mut c: libc::c_uchar = 0;
+            let mut esc: libc::c_uchar = 0;
+            let mut is_right_quote: bool = 0 as libc::c_int != 0;
+            let mut escaping: bool = 0 as libc::c_int != 0;
+            let mut c_and_shell_quote_compat: bool = 0 as libc::c_int != 0;
+            if backslash_escapes as libc::c_int != 0
+                && quoting_style as libc::c_uint
+                    != shell_always_quoting_style as libc::c_int as libc::c_uint
+                && quote_string_len != 0
+                && i.wrapping_add(quote_string_len)
+                    <= (if argsize == 18446744073709551615 as libc::c_ulong
+                        && (1 as libc::c_int as libc::c_ulong) < quote_string_len
+                    {
+                        argsize = strlen(arg);
+                        argsize
+                    } else {
+                        argsize
+                    })
+                && memcmp(
+                    arg.offset(i as isize) as *const libc::c_void,
+                    quote_string as *const libc::c_void,
+                    quote_string_len,
+                ) == 0 as libc::c_int
+            {
+                if elide_outer_quotes {
+                    current_block = 7928555609993211441;
+                    break 's_25;
+                }
+                is_right_quote = 1 as libc::c_int != 0;
+            }
+            c = *arg.offset(i as isize) as libc::c_uchar;
+            match c as libc::c_int {
+                0 => {
+                    if backslash_escapes {
     if elide_outer_quotes {
         current_block = 7928555609993211441;
         break 's_25;
@@ -505,60 +492,48 @@ match c {
     escaping = true;
     if quoting_style == shell_always_quoting_style && !pending_shell_escape_end {
         if len < buffersize {
-            unsafe {
-                *buffer.offset(len as isize) = b'\'' as i8;
-            }
+            unsafe { *buffer.offset(len as isize) = b'\'' as i8; }
         }
         len += 1;
         if len < buffersize {
-            unsafe {
-                *buffer.offset(len as isize) = b'$' as i8;
-            }
+            unsafe { *buffer.offset(len as isize) = b'$' as i8; }
         }
         len += 1;
         if len < buffersize {
-            unsafe {
-                *buffer.offset(len as isize) = b'\'' as i8;
-            }
+            unsafe { *buffer.offset(len as isize) = b'\'' as i8; }
         }
         len += 1;
         pending_shell_escape_end = true;
     }
     if len < buffersize {
-        unsafe {
-            *buffer.offset(len as isize) = b'\\' as i8;
-        }
+        unsafe { *buffer.offset(len as isize) = b'\\' as i8; }
     }
     len += 1;
     if quoting_style != shell_always_quoting_style
         && i + 1 < argsize
-        && ('0' as i8 <= unsafe { *arg.offset((i + 1) as isize) } && unsafe { *arg.offset((i + 1) as isize) } <= '9' as i8)
+        && unsafe { *arg.offset((i + 1) as isize) } >= b'0' as i8
+        && unsafe { *arg.offset((i + 1) as isize) } <= b'9' as i8
     {
         if len < buffersize {
-            unsafe {
-                *buffer.offset(len as isize) = b'0' as i8;
-            }
+            unsafe { *buffer.offset(len as isize) = b'0' as i8; }
         }
         len += 1;
         if len < buffersize {
-            unsafe {
-                *buffer.offset(len as isize) = b'0' as i8;
-            }
+            unsafe { *buffer.offset(len as isize) = b'0' as i8; }
         }
         len += 1;
     }
     c = b'0';
     current_block = 253337042034819032;
-} else if flags & QA_ELIDE_NULL_BYTES as i32 != 0 {
+} else if (flags & QA_ELIDE_NULL_BYTES as i32) != 0 {
     current_block = 13619784596304402172;
 } else {
     current_block = 253337042034819032;
 }
 
-
-    }
-    63 => {
-         match quoting_style as libc::c_uint {
+                }
+                63 => {
+                    match quoting_style as libc::c_uint {
                         2 => {
                             current_block = 17954593875197965021;
                             match current_block {
@@ -689,38 +664,37 @@ match c {
                             current_block = 253337042034819032;
                         }
                     }
-
-    }
-    7 => {
-        esc = 'a' as u8;
-        current_block = 1190876092451756080;
-    }
-    8 => {
-        esc = 'b' as u8;
-        current_block = 1190876092451756080;
-    }
-    12 => {
-        esc = 'f' as u8;
-        current_block = 1190876092451756080;
-    }
-    10 => {
-        esc = 'n' as u8;
-        current_block = 9215498979640025612;
-    }
-    13 => {
-        esc = 'r' as u8;
-        current_block = 9215498979640025612;
-    }
-    9 => {
-        esc = 't' as u8;
-        current_block = 9215498979640025612;
-    }
-    11 => {
-        esc = 'v' as u8;
-        current_block = 1190876092451756080;
-    }
-    92 => {
-         esc = c;
+                }
+                7 => {
+                    esc = 'a' as i32 as libc::c_uchar;
+                    current_block = 1190876092451756080;
+                }
+                8 => {
+                    esc = 'b' as i32 as libc::c_uchar;
+                    current_block = 1190876092451756080;
+                }
+                12 => {
+                    esc = 'f' as i32 as libc::c_uchar;
+                    current_block = 1190876092451756080;
+                }
+                10 => {
+                    esc = 'n' as i32 as libc::c_uchar;
+                    current_block = 9215498979640025612;
+                }
+                13 => {
+                    esc = 'r' as i32 as libc::c_uchar;
+                    current_block = 9215498979640025612;
+                }
+                9 => {
+                    esc = 't' as i32 as libc::c_uchar;
+                    current_block = 9215498979640025612;
+                }
+                11 => {
+                    esc = 'v' as i32 as libc::c_uchar;
+                    current_block = 1190876092451756080;
+                }
+                92 => {
+                    esc = c;
 if quoting_style == shell_always_quoting_style {
     if elide_outer_quotes {
         current_block = 7928555609993211441;
@@ -733,43 +707,40 @@ if quoting_style == shell_always_quoting_style {
     current_block = 9215498979640025612;
 }
 
+                }
+                123 | 125 => {
+                    let argsize_is_max = argsize == u64::MAX;
+let is_arg_empty = argsize_is_max && unsafe { *arg.offset(1) == 0 };
+let is_argsize_one = argsize == 1;
 
-    }
-    123 | 125 => {
-         if if argsize == 18446744073709551615 as libc::c_ulong {
-                        (*arg.offset(1 as libc::c_int as isize) as libc::c_int
-                            == '\0' as i32) as libc::c_int
-                    } else {
-                        (argsize == 1 as libc::c_int as libc::c_ulong) as libc::c_int
-                    } == 0
-                    {
-                        current_block = 253337042034819032;
-                    } else {
-                        current_block = 16442922512115311366;
-                    }
+if !(is_arg_empty || is_argsize_one) {
+    current_block = 253337042034819032;
+} else {
+    current_block = 16442922512115311366;
+}
 
-    }
-    35 | 126 => {
-        current_block = 16442922512115311366;
-    }
-    32 => {
-        current_block = 4634307283396172174;
-    }
-    33 => {
-        current_block = 7549413860336125482;
-    }
-    34 | 36 | 38 | 40 | 41 | 42 | 59 | 60 | 61 => {
-        current_block = 13059411171234995867;
-    }
-    62 | 91 | 94 => {
-        current_block = 16620298045565028098;
-    }
-    96 | 124 => {
-        current_block = 15155215915847730705;
-    }
-    39 => {
-         encountered_single_quote = true;
-c_and_shell_quote_compat = true;
+                }
+                35 | 126 => {
+                    current_block = 16442922512115311366;
+                }
+                32 => {
+                    current_block = 4634307283396172174;
+                }
+                33 => {
+                    current_block = 7549413860336125482;
+                }
+                34 | 36 | 38 | 40 | 41 | 42 | 59 | 60 | 61 => {
+                    current_block = 13059411171234995867;
+                }
+                62 | 91 | 94 => {
+                    current_block = 16620298045565028098;
+                }
+                96 | 124 => {
+                    current_block = 15155215915847730705;
+                }
+                39 => {
+                    let mut encountered_single_quote = true;
+let mut c_and_shell_quote_compat = true;
 
 if quoting_style == shell_always_quoting_style {
     if elide_outer_quotes {
@@ -786,40 +757,36 @@ if quoting_style == shell_always_quoting_style {
         }
     }
     len = len.wrapping_add(1);
-    
     if len < buffersize {
         unsafe {
             *buffer.offset(len as isize) = '\\' as i8;
         }
     }
     len = len.wrapping_add(1);
-    
     if len < buffersize {
         unsafe {
             *buffer.offset(len as isize) = '\'' as i8;
         }
     }
     len = len.wrapping_add(1);
-    
     pending_shell_escape_end = false;
     current_block = 253337042034819032;
 } else {
     current_block = 253337042034819032;
 }
 
-
-    }
-    37 | 43 | 44 | 45 | 46 | 47 | 48 | 49 | 50 | 51 | 52 | 53 | 54 | 55 | 56
-    | 57 | 58 | 65 | 66 | 67 | 68 | 69 | 70 | 71 | 72 | 73 | 74 | 75 | 76
-    | 77 | 78 | 79 | 80 | 81 | 82 | 83 | 84 | 85 | 86 | 87 | 88 | 89 | 90
-    | 93 | 95 | 97 | 98 | 99 | 100 | 101 | 102 | 103 | 104 | 105 | 106 | 107
-    | 108 | 109 | 110 | 111 | 112 | 113 | 114 | 115 | 116 | 117 | 118 | 119
-    | 120 | 121 | 122 => {
-        c_and_shell_quote_compat = true;
-        current_block = 253337042034819032;
-    }
-    _ => {
-         let mut m: size_t = 0;
+                }
+                37 | 43 | 44 | 45 | 46 | 47 | 48 | 49 | 50 | 51 | 52 | 53 | 54 | 55 | 56
+                | 57 | 58 | 65 | 66 | 67 | 68 | 69 | 70 | 71 | 72 | 73 | 74 | 75 | 76
+                | 77 | 78 | 79 | 80 | 81 | 82 | 83 | 84 | 85 | 86 | 87 | 88 | 89 | 90
+                | 93 | 95 | 97 | 98 | 99 | 100 | 101 | 102 | 103 | 104 | 105 | 106 | 107
+                | 108 | 109 | 110 | 111 | 112 | 113 | 114 | 115 | 116 | 117 | 118 | 119
+                | 120 | 121 | 122 => {
+                    c_and_shell_quote_compat = 1 as libc::c_int != 0;
+                    current_block = 253337042034819032;
+                }
+                _ => {
+                    let mut m: size_t = 0;
                     let mut printable: bool = false;
                     if unibyte_locale {
                         m = 1 as libc::c_int as size_t;
@@ -889,218 +856,264 @@ if quoting_style == shell_always_quoting_style {
                         }
                     }
                     c_and_shell_quote_compat = printable;
-
-         if m > 1 || (backslash_escapes && !printable) {
-    let ilim = i.wrapping_add(m);
-    let buffer_slice = unsafe { std::slice::from_raw_parts_mut(buffer, buffersize as usize) };
-    loop {
-        if backslash_escapes && !printable {
-            if elide_outer_quotes {
-                current_block = 7928555609993211441;
-                break 's_25;
-            }
-            escaping = true;
-            if quoting_style == shell_always_quoting_style && !pending_shell_escape_end {
-                if len < buffersize {
-                    buffer_slice[len as usize] = '\'' as i8;
+                    if (1 as libc::c_int as libc::c_ulong) < m
+                        || backslash_escapes as libc::c_int != 0 && !printable
+                    {
+                        let mut ilim: size_t = i.wrapping_add(m);
+                        loop {
+                            if backslash_escapes as libc::c_int != 0 && !printable {
+                                if elide_outer_quotes {
+                                    current_block = 7928555609993211441;
+                                    break 's_25;
+                                }
+                                escaping = 1 as libc::c_int != 0;
+                                if quoting_style as libc::c_uint
+                                    == shell_always_quoting_style as libc::c_int as libc::c_uint
+                                    && !pending_shell_escape_end
+                                {
+                                    if len < buffersize {
+                                        *buffer.offset(len as isize) = '\'' as i32 as libc::c_char;
+                                    }
+                                    len = len.wrapping_add(1);
+                                    len;
+                                    if len < buffersize {
+                                        *buffer.offset(len as isize) = '$' as i32 as libc::c_char;
+                                    }
+                                    len = len.wrapping_add(1);
+                                    len;
+                                    if len < buffersize {
+                                        *buffer.offset(len as isize) = '\'' as i32 as libc::c_char;
+                                    }
+                                    len = len.wrapping_add(1);
+                                    len;
+                                    pending_shell_escape_end = 1 as libc::c_int != 0;
+                                }
+                                if len < buffersize {
+                                    *buffer.offset(len as isize) = '\\' as i32 as libc::c_char;
+                                }
+                                len = len.wrapping_add(1);
+                                len;
+                                if len < buffersize {
+                                    *buffer
+                                        .offset(
+                                            len as isize,
+                                        ) = ('0' as i32 + (c as libc::c_int >> 6 as libc::c_int))
+                                        as libc::c_char;
+                                }
+                                len = len.wrapping_add(1);
+                                len;
+                                if len < buffersize {
+                                    *buffer
+                                        .offset(
+                                            len as isize,
+                                        ) = ('0' as i32
+                                        + (c as libc::c_int >> 3 as libc::c_int & 7 as libc::c_int))
+                                        as libc::c_char;
+                                }
+                                len = len.wrapping_add(1);
+                                len;
+                                c = ('0' as i32 + (c as libc::c_int & 7 as libc::c_int))
+                                    as libc::c_uchar;
+                            } else if is_right_quote {
+                                if len < buffersize {
+                                    *buffer.offset(len as isize) = '\\' as i32 as libc::c_char;
+                                }
+                                len = len.wrapping_add(1);
+                                len;
+                                is_right_quote = 0 as libc::c_int != 0;
+                            }
+                            if ilim <= i.wrapping_add(1 as libc::c_int as libc::c_ulong)
+                            {
+                                break;
+                            }
+                            if pending_shell_escape_end as libc::c_int != 0 && !escaping
+                            {
+                                if len < buffersize {
+                                    *buffer.offset(len as isize) = '\'' as i32 as libc::c_char;
+                                }
+                                len = len.wrapping_add(1);
+                                len;
+                                if len < buffersize {
+                                    *buffer.offset(len as isize) = '\'' as i32 as libc::c_char;
+                                }
+                                len = len.wrapping_add(1);
+                                len;
+                                pending_shell_escape_end = 0 as libc::c_int != 0;
+                            }
+                            if len < buffersize {
+                                *buffer.offset(len as isize) = c as libc::c_char;
+                            }
+                            len = len.wrapping_add(1);
+                            len;
+                            i = i.wrapping_add(1);
+                            c = *arg.offset(i as isize) as libc::c_uchar;
+                        }
+                        current_block = 4476262310586904498;
+                    } else {
+                        current_block = 253337042034819032;
+                    }
                 }
-                len = len.wrapping_add(1);
-                if len < buffersize {
-                    buffer_slice[len as usize] = '$' as i8;
+            }
+            match current_block {
+                16442922512115311366 => {
+                    if i != 0 as libc::c_int as libc::c_ulong {
+                        current_block = 253337042034819032;
+                    } else {
+                        current_block = 4634307283396172174;
+                    }
                 }
-                len = len.wrapping_add(1);
-                if len < buffersize {
-                    buffer_slice[len as usize] = '\'' as i8;
+                9215498979640025612 => {
+                    if quoting_style as libc::c_uint
+                        == shell_always_quoting_style as libc::c_int as libc::c_uint
+                        && elide_outer_quotes as libc::c_int != 0
+                    {
+                        current_block = 7928555609993211441;
+                        break 's_25;
+                    }
+                    current_block = 1190876092451756080;
                 }
-                len = len.wrapping_add(1);
-                pending_shell_escape_end = true;
+                _ => {}
             }
-            if len < buffersize {
-                buffer_slice[len as usize] = '\\' as i8;
+            match current_block {
+                1190876092451756080 => {
+                    if backslash_escapes {
+                        c = esc;
+                        current_block = 3173013908131212616;
+                    } else {
+                        current_block = 253337042034819032;
+                    }
+                }
+                4634307283396172174 => {
+                    c_and_shell_quote_compat = 1 as libc::c_int != 0;
+                    current_block = 7549413860336125482;
+                }
+                _ => {}
             }
-            len = len.wrapping_add(1);
-            if len < buffersize {
-                buffer_slice[len as usize] = ('0' as i32 + (c as i32 >> 6)) as i8;
+            match current_block {
+                7549413860336125482 => {
+                    current_block = 13059411171234995867;
+                }
+                _ => {}
             }
-            len = len.wrapping_add(1);
-            if len < buffersize {
-                buffer_slice[len as usize] = ('0' as i32 + ((c as i32 >> 3) & 7)) as i8;
+            match current_block {
+                13059411171234995867 => {
+                    current_block = 16620298045565028098;
+                }
+                _ => {}
             }
-            len = len.wrapping_add(1);
-            c = ('0' as i32 + (c as i32 & 7)) as u8;
-        } else if is_right_quote {
-            if len < buffersize {
-                buffer_slice[len as usize] = '\\' as i8;
+            match current_block {
+                16620298045565028098 => {
+                    current_block = 15155215915847730705;
+                }
+                _ => {}
             }
-            len = len.wrapping_add(1);
-            is_right_quote = false;
-        }
-        if ilim <= i.wrapping_add(1) {
-            break;
-        }
-        if pending_shell_escape_end && !escaping {
-            if len < buffersize {
-                buffer_slice[len as usize] = '\'' as i8;
+            match current_block {
+                15155215915847730705 => {
+                    if quoting_style as libc::c_uint
+                        == shell_always_quoting_style as libc::c_int as libc::c_uint
+                        && elide_outer_quotes as libc::c_int != 0
+                    {
+                        current_block = 7928555609993211441;
+                        break 's_25;
+                    }
+                    current_block = 253337042034819032;
+                }
+                _ => {}
             }
-            len = len.wrapping_add(1);
-            if len < buffersize {
-                buffer_slice[len as usize] = '\'' as i8;
+            match current_block {
+                253337042034819032 => {
+                    if !((backslash_escapes as libc::c_int != 0
+                        && quoting_style as libc::c_uint
+                            != shell_always_quoting_style as libc::c_int as libc::c_uint
+                        || elide_outer_quotes as libc::c_int != 0)
+                        && !quote_these_too.is_null()
+                        && *quote_these_too
+                            .offset(
+                                (c as libc::c_ulong)
+                                    .wrapping_div(
+                                        (::core::mem::size_of::<libc::c_int>() as libc::c_ulong)
+                                            .wrapping_mul(8 as libc::c_int as libc::c_ulong),
+                                    ) as isize,
+                            )
+                            >> (c as libc::c_ulong)
+                                .wrapping_rem(
+                                    (::core::mem::size_of::<libc::c_int>() as libc::c_ulong)
+                                        .wrapping_mul(8 as libc::c_int as libc::c_ulong),
+                                ) & 1 as libc::c_int as libc::c_uint != 0)
+                        && !is_right_quote
+                    {
+                        current_block = 4476262310586904498;
+                    } else {
+                        current_block = 3173013908131212616;
+                    }
+                }
+                _ => {}
             }
-            len = len.wrapping_add(1);
-            pending_shell_escape_end = false;
-        }
-        if len < buffersize {
-            buffer_slice[len as usize] = c as i8;
-        }
-        len = len.wrapping_add(1);
-        i = i.wrapping_add(1);
-        c = unsafe { *arg.offset(i as isize) } as u8;
-    }
-    current_block = 4476262310586904498;
-} else {
-    current_block = 253337042034819032;
-}
-
-
-    }
-}
-
-match current_block {
-    16442922512115311366 => {
-        if i != 0 {
-            current_block = 253337042034819032;
-        } else {
-            current_block = 4634307283396172174;
-        }
-    }
-    9215498979640025612 => {
-        if quoting_style == shell_always_quoting_style && elide_outer_quotes {
-            current_block = 7928555609993211441;
-            break 's_25;
-        }
-        current_block = 1190876092451756080;
-    }
-    _ => {}
-}
-
-match current_block {
-    1190876092451756080 => {
-        if backslash_escapes {
-            c = esc;
-            current_block = 3173013908131212616;
-        } else {
-            current_block = 253337042034819032;
-        }
-    }
-    4634307283396172174 => {
-        c_and_shell_quote_compat = true;
-        current_block = 7549413860336125482;
-    }
-    _ => {}
-}
-
-match current_block {
-    7549413860336125482 => {
-        current_block = 13059411171234995867;
-    }
-    _ => {}
-}
-
-match current_block {
-    13059411171234995867 => {
-        current_block = 16620298045565028098;
-    }
-    _ => {}
-}
-
-            let mut current_block = match current_block {
-    16620298045565028098 => {
-        15155215915847730705
-    }
-    _ => current_block,
-};
-
-current_block = match current_block {
-    15155215915847730705 => {
-        if quoting_style == shell_always_quoting_style && elide_outer_quotes {
-            break 's_25;
-        }
-        253337042034819032
-    }
-    _ => current_block,
-};
-
-current_block = match current_block {
-    253337042034819032 => {
-        if !((backslash_escapes && quoting_style != shell_always_quoting_style) || elide_outer_quotes) 
-            && !quote_these_too.is_null() 
-            && (unsafe { *quote_these_too.offset(c as isize / (std::mem::size_of::<libc::c_int>() * 8) as isize) } >> (c as usize % (std::mem::size_of::<libc::c_int>() * 8)) & 1) != 0 
-            && !is_right_quote {
-            4476262310586904498
-        } else {
-            3173013908131212616
-        }
-    }
-    _ => current_block,
-};
-
-current_block = match current_block {
-    3173013908131212616 => {
-        if elide_outer_quotes {
-            break 's_25;
-        }
-        escaping = true;
-        if quoting_style == shell_always_quoting_style && !pending_shell_escape_end {
-            if len < buffersize {
-                unsafe { *buffer.offset(len as isize) = '\'' as i8; }
+            match current_block {
+                3173013908131212616 => {
+                    if elide_outer_quotes {
+                        current_block = 7928555609993211441;
+                        break 's_25;
+                    }
+                    escaping = 1 as libc::c_int != 0;
+                    if quoting_style as libc::c_uint
+                        == shell_always_quoting_style as libc::c_int as libc::c_uint
+                        && !pending_shell_escape_end
+                    {
+                        if len < buffersize {
+                            *buffer.offset(len as isize) = '\'' as i32 as libc::c_char;
+                        }
+                        len = len.wrapping_add(1);
+                        len;
+                        if len < buffersize {
+                            *buffer.offset(len as isize) = '$' as i32 as libc::c_char;
+                        }
+                        len = len.wrapping_add(1);
+                        len;
+                        if len < buffersize {
+                            *buffer.offset(len as isize) = '\'' as i32 as libc::c_char;
+                        }
+                        len = len.wrapping_add(1);
+                        len;
+                        pending_shell_escape_end = 1 as libc::c_int != 0;
+                    }
+                    if len < buffersize {
+                        *buffer.offset(len as isize) = '\\' as i32 as libc::c_char;
+                    }
+                    len = len.wrapping_add(1);
+                    len;
+                    current_block = 4476262310586904498;
+                }
+                _ => {}
             }
-            len += 1;
-            if len < buffersize {
-                unsafe { *buffer.offset(len as isize) = '$' as i8; }
+            match current_block {
+                4476262310586904498 => {
+                    if pending_shell_escape_end as libc::c_int != 0 && !escaping {
+                        if len < buffersize {
+                            *buffer.offset(len as isize) = '\'' as i32 as libc::c_char;
+                        }
+                        len = len.wrapping_add(1);
+                        len;
+                        if len < buffersize {
+                            *buffer.offset(len as isize) = '\'' as i32 as libc::c_char;
+                        }
+                        len = len.wrapping_add(1);
+                        len;
+                        pending_shell_escape_end = 0 as libc::c_int != 0;
+                    }
+                    if len < buffersize {
+                        *buffer.offset(len as isize) = c as libc::c_char;
+                    }
+                    len = len.wrapping_add(1);
+                    len;
+                    if !c_and_shell_quote_compat {
+                        all_c_and_shell_quote_compat = 0 as libc::c_int != 0;
+                    }
+                }
+                _ => {}
             }
-            len += 1;
-            if len < buffersize {
-                unsafe { *buffer.offset(len as isize) = '\'' as i8; }
-            }
-            len += 1;
-            pending_shell_escape_end = true;
-        }
-        if len < buffersize {
-            unsafe { *buffer.offset(len as isize) = '\\' as i8; }
-        }
-        len += 1;
-        4476262310586904498
-    }
-    _ => current_block,
-};
-
-current_block = match current_block {
-    4476262310586904498 => {
-        if pending_shell_escape_end && !escaping {
-            if len < buffersize {
-                unsafe { *buffer.offset(len as isize) = '\'' as i8; }
-            }
-            len += 1;
-            if len < buffersize {
-                unsafe { *buffer.offset(len as isize) = '\'' as i8; }
-            }
-            len += 1;
-            pending_shell_escape_end = false;
-        }
-        if len < buffersize {
-            unsafe { *buffer.offset(len as isize) = c as i8; }
-        }
-        len += 1;
-        if !c_and_shell_quote_compat {
-            all_c_and_shell_quote_compat = false;
-        }
-        current_block
-    }
-    _ => current_block,
-};
-
-i += 1;
-
+            i = i.wrapping_add(1);
+            i;
         }
         if len == 0 as libc::c_int as libc::c_ulong
             && quoting_style as libc::c_uint
@@ -1180,13 +1193,12 @@ i += 1;
 }
 #[no_mangle]
 pub fn quotearg_buffer(
-    buffer: &mut [c_char],
-    arg: &[c_char],
+    buffer: &mut [libc::c_char],
+    arg: &[libc::c_char],
     o: Option<&quoting_options>,
 ) -> usize {
-    let p = o.unwrap_or_else(|| unsafe { &default_quoting_options });
+    let p: &quoting_options = o.unwrap_or_else(|| unsafe { &default_quoting_options });
     let e = std::io::Error::last_os_error();
-    
     let r = unsafe {
         quotearg_buffer_restyled(
             buffer.as_mut_ptr(),
@@ -1200,8 +1212,7 @@ pub fn quotearg_buffer(
             p.right_quote,
         )
     };
-
-    std::mem::forget(e); // Avoid dropping the error
+    std::mem::forget(e); // Placeholder for error handling
     r.try_into().unwrap()
 }
 
@@ -1212,9 +1223,9 @@ pub fn quotearg_alloc(
     o: &quoting_options,
 ) -> CString {
     let arg_ptr = arg.as_ptr();
-    let argsize_ptr = argsize.try_into().unwrap(); // Assuming argsize is valid and convertible
-    let result_ptr = unsafe { quotearg_alloc_mem(arg_ptr, argsize_ptr, std::ptr::null_mut(), o) };
-    unsafe { CString::from_raw(result_ptr) }
+    let argsize_ptr: *mut size_t = std::ptr::null_mut();
+    let result = unsafe { quotearg_alloc_mem(arg_ptr, argsize.try_into().unwrap(), argsize_ptr, o) };
+    unsafe { CStr::from_ptr(result).to_owned() }
 }
 
 #[no_mangle]
@@ -1281,27 +1292,26 @@ static mut slotvec: *mut slotvec = unsafe {
     &slotvec0 as *const slotvec as *mut slotvec
 };
 #[no_mangle]
-pub fn quotearg_free() {
-    unsafe {
-        let mut sv = Vec::from_raw_parts(slotvec, nslots as usize, nslots as usize); // Convert raw pointer to Vec
-        for i in 1..nslots {
-            if let Some(val) = sv.get_mut(i as usize) {
-                drop(Box::from_raw(val.val)); // Assuming val is a pointer to a heap-allocated value
-            }
-        }
-        if sv[0].val as *const libc::c_char != slot0.as_ptr() {
-            drop(Box::from_raw(sv[0].val)); // Assuming val is a pointer to a heap-allocated value
-            slotvec0.size = std::mem::size_of::<[libc::c_char; 256]>() as libc::c_ulong;
-            slotvec0.val = slot0.as_mut_ptr();
-        }
-        if sv.as_ptr() != &slotvec0 as *const _ as *mut _ {
-            drop(Box::from_raw(sv.as_mut_ptr())); // Assuming sv is a pointer to a heap-allocated value
-            slotvec = &mut slotvec0;
-        }
-        nslots = 1;
+pub unsafe extern "C" fn quotearg_free() {
+    let mut sv: *mut slotvec = slotvec;
+    let mut i: libc::c_int = 0;
+    i = 1 as libc::c_int;
+    while i < nslots {
+        free((*sv.offset(i as isize)).val as *mut libc::c_void);
+        i += 1;
+        i;
     }
+    if (*sv.offset(0 as libc::c_int as isize)).val != slot0.as_mut_ptr() {
+        free((*sv.offset(0 as libc::c_int as isize)).val as *mut libc::c_void);
+        slotvec0.size = ::core::mem::size_of::<[libc::c_char; 256]>() as libc::c_ulong;
+        slotvec0.val = slot0.as_mut_ptr();
+    }
+    if sv != &mut slotvec0 as *mut slotvec {
+        free(sv as *mut libc::c_void);
+        slotvec = &mut slotvec0;
+    }
+    nslots = 1 as libc::c_int;
 }
-
 unsafe extern "C" fn quotearg_n_options(
     mut n: libc::c_int,
     mut arg: *const libc::c_char,
@@ -1382,43 +1392,35 @@ unsafe extern "C" fn quotearg_n_options(
     return val;
 }
 #[no_mangle]
-pub unsafe extern "C" fn quotearg_n(
-    mut n: libc::c_int,
-    mut arg: *const libc::c_char,
-) -> *mut libc::c_char {
-    return quotearg_n_options(
-        n,
-        arg,
-        18446744073709551615 as libc::c_ulong,
-        &mut default_quoting_options,
-    );
+pub fn quotearg_n(n: i32, arg: &CStr) -> *mut libc::c_char {
+    unsafe {
+        let options = &default_quoting_options;
+        let max_length = u64::MAX;
+        quotearg_n_options(n, arg.as_ptr(), max_length, options)
+    }
 }
+
 #[no_mangle]
 pub fn quotearg_n_mem(
     n: i32,
-    arg: &str,
+    arg: &CStr,
+    argsize: usize,
 ) -> *mut libc::c_char {
-    let arg_cstring = CString::new(arg).expect("CString::new failed");
-    let argsize = arg_cstring.as_bytes_with_nul().len() as u64;
-
-    unsafe {
-        quotearg_n_options(n, arg_cstring.as_ptr(), argsize, &default_quoting_options)
-    }
+    let argsize_u64: u64 = argsize.try_into().unwrap();
+    unsafe { quotearg_n_options(n, arg.as_ptr(), argsize_u64, &default_quoting_options) }
 }
 
 #[no_mangle]
-pub fn quotearg(arg: &CStr) -> CString {
-    unsafe {
-        let quoted_ptr = quotearg_n(0, arg.as_ptr());
-        CString::from_raw(quoted_ptr)
-    }
+pub fn quotearg(arg: &CStr) -> String {
+    let result = quotearg_n(0, arg);
+    unsafe { CStr::from_ptr(result).to_string_lossy().into_owned() }
 }
 
 #[no_mangle]
 pub fn quotearg_mem(arg: &CStr) -> CString {
     let argsize = arg.to_bytes().len();
-    let result = quotearg_n_mem(0, arg.to_str().unwrap());
-    unsafe { CString::from_raw(result) }
+    let result_ptr = quotearg_n_mem(0, arg, argsize);
+    unsafe { CString::from_raw(result_ptr) }
 }
 
 #[no_mangle]
@@ -1437,11 +1439,12 @@ pub fn quotearg_n_style(
 pub fn quotearg_n_style_mem(
     n: i32,
     s: quoting_style,
-    arg: &str,
+    arg: &CStr,
 ) -> *mut libc::c_char {
     let o: quoting_options = quoting_options_from_style(s);
+    let argsize = arg.to_bytes().len() as u64;
     unsafe {
-        quotearg_n_options(n, arg.as_ptr() as *const libc::c_char, arg.len() as size_t, &o)
+        quotearg_n_options(n, arg.as_ptr(), argsize, &o)
     }
 }
 
@@ -1455,14 +1458,14 @@ pub fn quotearg_style(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn quotearg_style_mem(
-    mut s: quoting_style,
-    mut arg: *const libc::c_char,
-    mut argsize: size_t,
-) -> *mut libc::c_char {
-    let arg_str = unsafe { CString::from_raw(arg as *mut libc::c_char) }.into_string().unwrap();
-return quotearg_n_style_mem(0, s, &arg_str);
+pub fn quotearg_style_mem(
+    s: quoting_style,
+    arg: &CStr,
+) -> CString {
+    let result_ptr = quotearg_n_style_mem(0, s, arg);
+    unsafe { CString::from_raw(result_ptr) }
 }
+
 #[no_mangle]
 pub unsafe extern "C" fn quotearg_char_mem(
     mut arg: *const libc::c_char,
@@ -1481,29 +1484,25 @@ pub unsafe extern "C" fn quotearg_char_mem(
     return quotearg_n_options(0 as libc::c_int, arg, argsize, &mut options);
 }
 #[no_mangle]
-pub unsafe extern "C" fn quotearg_char(
-    mut arg: *const libc::c_char,
-    mut ch: libc::c_char,
-) -> *mut libc::c_char {
-    return quotearg_char_mem(arg, 18446744073709551615 as libc::c_ulong, ch);
-}
-#[no_mangle]
-pub fn quotearg_colon(arg: &str) -> String {
-    let ch: i8 = b':' as i8;
-    let c_string = std::ffi::CString::new(arg).unwrap();
-    let result_ptr;
+pub fn quotearg_char(arg: &CStr, ch: char) -> *mut libc::c_char {
+    let ch_as_c_char = ch as libc::c_char;
+    let arg_ptr = arg.as_ptr();
     unsafe {
-        result_ptr = quotearg_char(c_string.as_ptr(), ch);
+        quotearg_char_mem(arg_ptr, u64::MAX, ch_as_c_char)
     }
-    unsafe { CString::from_raw(result_ptr).into_string().unwrap() }
+}
+
+#[no_mangle]
+pub fn quotearg_colon(arg: &CStr) -> CString {
+    let ch = ':' as char;
+    let result_ptr = quotearg_char(arg, ch);
+    unsafe { CString::from_raw(result_ptr) }
 }
 
 #[no_mangle]
 pub fn quotearg_colon_mem(arg: &CStr) -> CString {
-    let argsize = arg.to_bytes().len();
-    let result_ptr = unsafe {
-        quotearg_char_mem(arg.as_ptr(), argsize.try_into().unwrap(), ':' as i32 as c_char)
-    };
+    let argsize = arg.to_bytes().len() as u64;
+    let result_ptr = unsafe { quotearg_char_mem(arg.as_ptr(), argsize, ':' as i32 as libc::c_char) };
     unsafe { CString::from_raw(result_ptr) }
 }
 
@@ -1521,7 +1520,7 @@ pub unsafe extern "C" fn quotearg_n_style_colon(
         right_quote: 0 as *const libc::c_char,
     };
     options = quoting_options_from_style(s);
-    let result = set_char_quoting(Some(&mut options), ':' as u8 as char, 1);
+    let result = set_char_quoting(Some(&mut options), ':' as char, 1);
     return quotearg_n_options(
         n,
         arg,
@@ -1553,26 +1552,20 @@ pub unsafe extern "C" fn quotearg_n_custom_mem(
     mut argsize: size_t,
 ) -> *mut libc::c_char {
     let mut o: quoting_options = default_quoting_options;
-    set_custom_quoting(&mut o as *mut quoting_options, left_quote as *const libc::c_char, right_quote as *const libc::c_char);
+    let left_quote_cstr = CStr::from_ptr(left_quote);
+let right_quote_cstr = CStr::from_ptr(right_quote);
+set_custom_quoting(Some(&mut o), left_quote_cstr, right_quote_cstr);
     return quotearg_n_options(n, arg, argsize, &mut o);
 }
 #[no_mangle]
 pub fn quotearg_custom(
-    left_quote: &str,
-    right_quote: &str,
-    arg: &str,
-) -> String {
-    let left_quote_c = std::ffi::CString::new(left_quote).unwrap();
-    let right_quote_c = std::ffi::CString::new(right_quote).unwrap();
-    let arg_c = std::ffi::CString::new(arg).unwrap();
-    
-    let result_ptr;
+    left_quote: &CStr,
+    right_quote: &CStr,
+    arg: &CStr,
+) -> CString {
     unsafe {
-        result_ptr = quotearg_n_custom(0, left_quote_c.as_ptr(), right_quote_c.as_ptr(), arg_c.as_ptr());
-    }
-    
-    unsafe {
-        CString::from_raw(result_ptr).into_string().unwrap()
+        let result_ptr = quotearg_n_custom(0, left_quote.as_ptr(), right_quote.as_ptr(), arg.as_ptr());
+        CString::from_raw(result_ptr)
     }
 }
 
@@ -1581,18 +1574,23 @@ pub fn quotearg_custom_mem(
     left_quote: &CStr,
     right_quote: &CStr,
     arg: &CStr,
-) -> CString {
+) -> String {
+    let left_quote_ptr = left_quote.as_ptr();
+    let right_quote_ptr = right_quote.as_ptr();
+    let arg_ptr = arg.as_ptr();
     let argsize = arg.to_bytes().len() as u64;
-    unsafe {
-        let result_ptr = quotearg_n_custom_mem(
+
+    let quoted_arg = unsafe {
+        quotearg_n_custom_mem(
             0,
-            left_quote.as_ptr(),
-            right_quote.as_ptr(),
-            arg.as_ptr(),
+            left_quote_ptr,
+            right_quote_ptr,
+            arg_ptr,
             argsize,
-        );
-        CString::from_raw(result_ptr)
-    }
+        )
+    };
+
+    unsafe { CStr::from_ptr(quoted_arg).to_string_lossy().into_owned() }
 }
 
 #[no_mangle]
@@ -1607,33 +1605,34 @@ pub static mut quote_quoting_options: quoting_options = {
     init
 };
 #[no_mangle]
-pub unsafe extern "C" fn quote_n_mem(
-    mut n: libc::c_int,
-    mut arg: *const libc::c_char,
-    mut argsize: size_t,
+pub fn quote_n_mem(
+    n: i32,
+    arg: &CStr,
+    argsize: usize,
 ) -> *const libc::c_char {
-    return quotearg_n_options(n, arg, argsize, &mut quote_quoting_options);
-}
-#[no_mangle]
-pub fn quote_mem(arg: &str) -> String {
-    let argsize = arg.len() as libc::size_t;
-    let c_string = std::ffi::CString::new(arg).expect("CString::new failed");
-    
-    let result_ptr = unsafe { quote_n_mem(0, c_string.as_ptr(), argsize.try_into().unwrap()) };
-    
-    unsafe { std::ffi::CString::from_raw(result_ptr as *mut libc::c_char).into_string().expect("Failed to convert C string to Rust string") }
+    unsafe {
+        let options = &quote_quoting_options;
+        // Convert argsize from usize to u64 for the function call
+        quotearg_n_options(n, arg.as_ptr(), argsize as u64, options)
+    }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn quote_n(
-    mut n: libc::c_int,
+pub unsafe extern "C" fn quote_mem(
     mut arg: *const libc::c_char,
+    mut argsize: size_t,
 ) -> *const libc::c_char {
-    return quote_n_mem(n, arg, 18446744073709551615 as libc::c_ulong);
+    let arg_cstr = CStr::from_ptr(arg);
+return quote_n_mem(0, arg_cstr, argsize as usize);
 }
 #[no_mangle]
-pub fn quote(arg: &str) -> *const libc::c_char {
-    let c_string = std::ffi::CString::new(arg).expect("CString::new failed");
-    unsafe { quote_n(0, c_string.as_ptr()) }
+pub fn quote_n(n: i32, arg: &CStr) -> *const libc::c_char {
+    let n_i32: i32 = n;
+    quote_n_mem(n_i32, arg, usize::MAX)
+}
+
+#[no_mangle]
+pub fn quote(arg: &CStr) -> *const libc::c_char {
+    quote_n(0, arg)
 }
 

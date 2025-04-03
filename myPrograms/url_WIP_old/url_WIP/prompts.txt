@@ -1,0 +1,2510 @@
+DefId(0:54 ~ oxidate_out[187d]::url_get_scheme)
+Chunk root
+Here is a function:
+```rust
+pub unsafe extern "C" fn url_get_scheme(
+    mut url: *const libc::c_char,
+) -> *mut libc::c_char {
+    let mut protocol = malloc(32 as libc::c_int as libc::c_ulong) as *mut libc::c_char;
+    if protocol.is_null() {
+        return 0 as *mut libc::c_char;
+    }
+    sscanf(url, b"%[^://]\0" as *const u8 as *const libc::c_char, protocol);
+    if url_is_protocol(protocol) {
+        return protocol;
+    }
+    free(protocol as *mut libc::c_void);
+    return 0 as *mut libc::c_char;
+}
+```
+Here are its call sites
+Call site 1:
+```rust
+return url_get_scheme(url);
+```
+
+The file contains the following imports:
+```rust
+use ::libc;
+```
+Convert the function to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible. Do not change the function name.
+
+Follow the following format for your output: Place the function translation between the tags <FUNC> and </FUNC>. If the function signature changed in translation, its callsites will need to be modified as well. Place each callsite translation (in the same order it appears above) between <CALL> and </CALL>. Note that even if the callsite is only a single statement, the translation can be mutiple statements. For example, you may need to declare new variables, or convert between types, either before or after the call. The translation should be such that the surrounding code is not affected by the changes.
+
+
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:38 ~ oxidate_out[187d]::url_get_protocol)
+Chunk root
+Here is a function:
+```rust
+unsafe extern "C" fn url_get_protocol(
+    mut url: *const libc::c_char,
+) -> *mut libc::c_char {
+    return url_get_scheme(url);
+}
+```
+
+
+The file contains the following imports:
+```rust
+use ::libc;
+```
+```rust
+use std::ffi::{CString, CStr};
+```
+```rust
+CStr
+```
+```rust
+CString
+```
+Convert the function to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible. Do not change the function name.
+
+Follow the following format for your output: Place the function translation between the tags <FUNC> and </FUNC>. 
+
+
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:47 ~ oxidate_out[187d]::scan_part)
+Chunk root
+Here is a function:
+```rust
+unsafe extern "C" fn scan_part(
+    mut start: *mut libc::c_char,
+    mut category: Category,
+    mut delimiter1: libc::c_char,
+    mut delimiter2: libc::c_char,
+) -> *mut libc::c_char {
+    let mut p = start;
+    loop {
+        if *p as libc::c_int == '\0' as i32
+            || *p as libc::c_int == delimiter1 as libc::c_int
+            || *p as libc::c_int == delimiter2 as libc::c_int
+        {
+            return p;
+        }
+        if char_cat[*p as libc::c_uchar as usize] as libc::c_uint
+            & category as libc::c_uint != 0
+        {
+            p = p.offset(1);
+            p;
+        } else {
+            return 0 as *mut libc::c_char
+        }
+    };
+}
+```
+Here are its call sites
+Call site 1:
+```rust
+hostname_end = scan_part(
+                                    p,
+                                    IPv6Char,
+                                    ']' as i32 as libc::c_char,
+                                    '\0' as i32 as libc::c_char,
+                                );
+```
+Call site 2:
+```rust
+let mut fragment_end_0 = scan_part(
+                                                p,
+                                                Fragment,
+                                                '\0' as i32 as libc::c_char,
+                                                '\0' as i32 as libc::c_char,
+                                            );
+```
+Call site 3:
+```rust
+path_end = scan_part(
+                                        p,
+                                        PCharSlash,
+                                        '?' as i32 as libc::c_char,
+                                        '#' as i32 as libc::c_char,
+                                    );
+```
+Call site 4:
+```rust
+let mut key_end = scan_part(
+                p_0,
+                Query,
+                '=' as i32 as libc::c_char,
+                '\0' as i32 as libc::c_char,
+            );
+```
+Call site 5:
+```rust
+let mut kv_end = scan_part(
+            p_0,
+            Query,
+            '&' as i32 as libc::c_char,
+            ';' as i32 as libc::c_char,
+        );
+```
+Call site 6:
+```rust
+userinfo_end = scan_part(
+                            p,
+                            Userinfo,
+                            '@' as i32 as libc::c_char,
+                            '\0' as i32 as libc::c_char,
+                        );
+```
+Call site 7:
+```rust
+protocol_end = scan_part(
+            p,
+            Scheme,
+            ':' as i32 as libc::c_char,
+            '\0' as i32 as libc::c_char,
+        );
+```
+Call site 8:
+```rust
+hostname_end = scan_part(
+                                    p,
+                                    (Unreserved as libc::c_int | SubDelim as libc::c_int)
+                                        as Category,
+                                    ':' as i32 as libc::c_char,
+                                    '/' as i32 as libc::c_char,
+                                );
+```
+Call site 9:
+```rust
+let mut fragment_end = scan_part(
+                                                        query_end.offset(1 as libc::c_int as isize),
+                                                        Fragment,
+                                                        '\0' as i32 as libc::c_char,
+                                                        '\0' as i32 as libc::c_char,
+                                                    );
+```
+Call site 10:
+```rust
+let mut query_end = scan_part(
+                                                p,
+                                                Query,
+                                                '#' as i32 as libc::c_char,
+                                                '\0' as i32 as libc::c_char,
+                                            );
+```
+
+The file contains the following imports:
+```rust
+use std::ffi::{CString, CStr};
+```
+```rust
+use ::libc;
+```
+```rust
+CString
+```
+```rust
+CStr
+```
+Convert the function to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible. Do not change the function name.
+
+Follow the following format for your output: Place the function translation between the tags <FUNC> and </FUNC>. If the function signature changed in translation, its callsites will need to be modified as well. Place each callsite translation (in the same order it appears above) between <CALL> and </CALL>. Note that even if the callsite is only a single statement, the translation can be mutiple statements. For example, you may need to declare new variables, or convert between types, either before or after the call. The translation should be such that the surrounding code is not affected by the changes.
+
+
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:46 ~ oxidate_out[187d]::decode_percent)
+Chunk root
+Here is a function:
+```rust
+unsafe extern "C" fn decode_percent(mut s: *mut libc::c_char) -> *mut libc::c_char {
+    let mut in_0 = s;
+    let mut out = s;
+    while *in_0 != 0 {
+        if *in_0 as libc::c_int == '%' as i32 {
+            in_0 = in_0.offset(1);
+            let high = unhex(in_0);
+            if high < 0 as libc::c_int || *in_0 as libc::c_int == '\0' as i32 {
+                return 0 as *mut libc::c_char;
+            }
+            in_0 = in_0.offset(1);
+            let low = unhex(in_0);
+            if low < 0 as libc::c_int || *in_0 as libc::c_int == '\0' as i32 {
+                return 0 as *mut libc::c_char;
+            }
+            *out = (high as libc::c_uint)
+                .wrapping_mul(16 as libc::c_uint)
+                .wrapping_add(low as libc::c_uint) as libc::c_char;
+            out = out.offset(1);
+            out;
+            in_0 = in_0.offset(1);
+            in_0;
+        } else {
+            let fresh0 = in_0;
+            in_0 = in_0.offset(1);
+            let fresh1 = out;
+            out = out.offset(1);
+            *fresh1 = *fresh0;
+        }
+    }
+    *out = '\0' as i32 as libc::c_char;
+    return s;
+}
+```
+Here are its call sites
+Call site 1:
+```rust
+*fresh3 = decode_percent(value);
+```
+Call site 2:
+```rust
+(*data)
+                                                            .fragment = decode_percent(
+                                                            query_end.offset(1 as libc::c_int as isize),
+                                                        );
+```
+Call site 3:
+```rust
+(*data).path = decode_percent(p);
+```
+Call site 4:
+```rust
+*fresh2 = decode_percent(key);
+```
+Call site 5:
+```rust
+(*data).fragment = decode_percent(p);
+```
+
+The file contains the following imports:
+```rust
+use std::ffi::{CString, CStr};
+```
+```rust
+CStr
+```
+```rust
+CString
+```
+```rust
+use ::libc;
+```
+Convert the function to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible. Do not change the function name.
+
+Follow the following format for your output: Place the function translation between the tags <FUNC> and </FUNC>. If the function signature changed in translation, its callsites will need to be modified as well. Place each callsite translation (in the same order it appears above) between <CALL> and </CALL>. Note that even if the callsite is only a single statement, the translation can be mutiple statements. For example, you may need to declare new variables, or convert between types, either before or after the call. The translation should be such that the surrounding code is not affected by the changes.
+
+
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:53 ~ oxidate_out[187d]::url_is_ssh)
+Chunk root
+Here is a function:
+```rust
+pub unsafe extern "C" fn url_is_ssh(mut str: *const libc::c_char) -> bool {
+    if 0 as libc::c_int == strcmp(str, b"ssh\0" as *const u8 as *const libc::c_char)
+        || 0 as libc::c_int == strcmp(str, b"git\0" as *const u8 as *const libc::c_char)
+    {
+        return 1 as libc::c_int != 0;
+    }
+    return 0 as libc::c_int != 0;
+}
+```
+Here are its call sites
+Call site 1:
+```rust
+is_ssh = url_is_ssh((*data).protocol);
+```
+
+The file contains the following imports:
+```rust
+use std::char;
+```
+```rust
+use std::ptr;
+```
+```rust
+CStr
+```
+```rust
+use std::ffi::{CString, CStr};
+```
+```rust
+CString
+```
+```rust
+use ::libc;
+```
+Convert the function to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible. Do not change the function name.
+
+Follow the following format for your output: Place the function translation between the tags <FUNC> and </FUNC>. If the function signature changed in translation, its callsites will need to be modified as well. Place each callsite translation (in the same order it appears above) between <CALL> and </CALL>. Note that even if the callsite is only a single statement, the translation can be mutiple statements. For example, you may need to declare new variables, or convert between types, either before or after the call. The translation should be such that the surrounding code is not affected by the changes.
+
+
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:48 ~ oxidate_out[187d]::scan_decimal_number)
+Chunk root
+Here is a function:
+```rust
+unsafe extern "C" fn scan_decimal_number(
+    mut start: *mut libc::c_char,
+) -> *mut libc::c_char {
+    let mut p = start;
+    while *p as libc::c_int >= '0' as i32 && *p as libc::c_int <= '9' as i32 {
+        p = p.offset(1);
+        p;
+    }
+    return if p != start { p } else { 0 as *mut libc::c_char };
+}
+```
+Here are its call sites
+Call site 1:
+```rust
+let mut port_end_0 = scan_decimal_number(
+                                            hostname_end.offset(1 as libc::c_int as isize),
+                                        );
+```
+Call site 2:
+```rust
+let mut port_end = scan_decimal_number(
+                                            hostname_end.offset(1 as libc::c_int as isize),
+                                        );
+```
+
+The file contains the following imports:
+```rust
+CStr
+```
+```rust
+use std::char;
+```
+```rust
+use ::libc;
+```
+```rust
+use std::ffi::{CString, CStr};
+```
+```rust
+CString
+```
+```rust
+use std::ptr;
+```
+Convert the function to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible. Do not change the function name.
+
+Follow the following format for your output: Place the function translation between the tags <FUNC> and </FUNC>. If the function signature changed in translation, its callsites will need to be modified as well. Place each callsite translation (in the same order it appears above) between <CALL> and </CALL>. Note that even if the callsite is only a single statement, the translation can be mutiple statements. For example, you may need to declare new variables, or convert between types, either before or after the call. The translation should be such that the surrounding code is not affected by the changes.
+
+
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:49 ~ oxidate_out[187d]::parse_query_string)
+Chunk root
+Here is a function:
+```rust
+unsafe extern "C" fn parse_query_string(
+    mut begin: *mut libc::c_char,
+    mut end: *mut libc::c_char,
+) -> *mut url_key_value {
+    let mut current_block: u64;
+    let mut elements = 1 as libc::c_int as libc::c_uint;
+    let mut p: *const libc::c_char = begin;
+    while p != end as *const libc::c_char {
+        if *p as libc::c_int == '&' as i32 || *p as libc::c_int == ';' as i32 {
+            elements = elements.wrapping_add(1);
+            elements;
+        }
+        p = p.offset(1);
+        p;
+    }
+    let mut kv = calloc(
+        elements.wrapping_add(1 as libc::c_int as libc::c_uint) as libc::c_ulong,
+        ::core::mem::size_of::<url_key_value>() as libc::c_ulong,
+    ) as *mut url_key_value;
+    if kv.is_null() {
+        return 0 as *mut url_key_value;
+    }
+    let mut p_0 = begin;
+    let mut element = 0 as libc::c_int as libc::c_uint;
+    loop {
+        if !(element <= elements && p_0 < end) {
+            current_block = 11584701595673473500;
+            break;
+        }
+        let mut key = p_0;
+        let mut kv_end = scan_part(
+            p_0,
+            Query,
+            '&' as i32 as libc::c_char,
+            ';' as i32 as libc::c_char,
+        );
+        if kv_end.is_null() {
+            fprintf(
+                stderr,
+                b"ERROR %s Line %u! p=\xC2\xAB%s\xC2\xBB\n\0" as *const u8
+                    as *const libc::c_char,
+                b"/workspace/programs/url/url.c\0" as *const u8 as *const libc::c_char,
+                153 as libc::c_int,
+                p_0,
+            );
+            current_block = 7272095228866324518;
+            break;
+        } else {
+            *kv_end = '\0' as i32 as libc::c_char;
+            let mut key_end = scan_part(
+                p_0,
+                Query,
+                '=' as i32 as libc::c_char,
+                '\0' as i32 as libc::c_char,
+            );
+            let has_value = *key_end as libc::c_int == '=' as i32;
+            *key_end = '\0' as i32 as libc::c_char;
+            let ref mut fresh2 = (*kv.offset(element as isize)).key;
+            *fresh2 = decode_percent(key);
+            if has_value {
+                let mut value = key_end.offset(1 as libc::c_int as isize);
+                let ref mut fresh3 = (*kv.offset(element as isize)).value;
+                *fresh3 = decode_percent(value);
+            } else {
+                let ref mut fresh4 = (*kv.offset(element as isize)).value;
+                *fresh4 = key_end;
+            }
+            p_0 = kv_end.offset(1 as libc::c_int as isize);
+            element = element.wrapping_add(1);
+            element;
+        }
+    }
+    match current_block {
+        11584701595673473500 => return kv,
+        _ => {
+            free(kv as *mut libc::c_void);
+            return 0 as *mut url_key_value;
+        }
+    };
+}
+```
+Here are its call sites
+Call site 1:
+```rust
+(*data).query = parse_query_string(p, query_end);
+```
+The function uses the following global variables:
+```rust
+pub const Query: Category = 64;
+```
+The file contains the following imports:
+```rust
+use std::ffi::{CString, CStr};
+```
+```rust
+use std::char;
+```
+```rust
+use ::libc;
+```
+```rust
+CStr
+```
+```rust
+use std::ptr;
+```
+```rust
+CString
+```
+Convert the function to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible. Do not change the function name.
+
+Follow the following format for your output: Place the function translation between the tags <FUNC> and </FUNC>. If the function signature changed in translation, its callsites will need to be modified as well. Place each callsite translation (in the same order it appears above) between <CALL> and </CALL>. Note that even if the callsite is only a single statement, the translation can be mutiple statements. For example, you may need to declare new variables, or convert between types, either before or after the call. The translation should be such that the surrounding code is not affected by the changes.
+
+
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:44 ~ oxidate_out[187d]::strdup)
+Chunk root
+Here is a function:
+```rust
+pub unsafe extern "C" fn strdup(mut str: *const libc::c_char) -> *mut libc::c_char {
+    let n = (strlen(str)).wrapping_add(1 as libc::c_int as libc::c_ulong) as libc::c_int;
+    let mut dup = malloc(n as libc::c_ulong) as *mut libc::c_char;
+    if !dup.is_null() {
+        strcpy(dup, str);
+    }
+    return dup;
+}
+```
+Here are its call sites
+Call site 1:
+```rust
+{
+        strdup((*data).path)
+    }
+```
+Call site 2:
+```rust
+{
+        strdup((*data).path)
+    }
+```
+Call site 3:
+```rust
+{
+        strdup((*data).fragment)
+    }
+```
+Call site 4:
+```rust
+let mut p = strdup(url);
+```
+Call site 5:
+```rust
+{
+        strdup((*data).host)
+    }
+```
+Call site 6:
+```rust
+{
+        strdup((*data).port)
+    }
+```
+Call site 7:
+```rust
+{
+        strdup((*data).userinfo)
+    }
+```
+Call site 8:
+```rust
+{
+        strdup((*data).host)
+    }
+```
+
+The file contains the following imports:
+```rust
+use std::ptr;
+```
+```rust
+CString
+```
+```rust
+CStr
+```
+```rust
+use std::char;
+```
+```rust
+use std::ffi::{CString, CStr};
+```
+```rust
+use ::libc;
+```
+Convert the function to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible. Do not change the function name.
+
+Follow the following format for your output: Place the function translation between the tags <FUNC> and </FUNC>. If the function signature changed in translation, its callsites will need to be modified as well. Place each callsite translation (in the same order it appears above) between <CALL> and </CALL>. Note that even if the callsite is only a single statement, the translation can be mutiple statements. For example, you may need to declare new variables, or convert between types, either before or after the call. The translation should be such that the surrounding code is not affected by the changes.
+
+
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:65 ~ oxidate_out[187d]::url_free)
+Chunk root
+Here is a function:
+```rust
+pub unsafe extern "C" fn url_free(mut data: *mut url_data_t) {
+    if data.is_null() {
+        return;
+    }
+    free((*data).whole_url as *mut libc::c_void);
+    free((*data).query as *mut libc::c_void);
+    free(data as *mut libc::c_void);
+}
+```
+Here are its call sites
+Call site 1:
+```rust
+url_free(data);
+```
+Call site 2:
+```rust
+url_free(data);
+```
+Call site 3:
+```rust
+url_free(data);
+```
+Call site 4:
+```rust
+url_free(data);
+```
+Call site 5:
+```rust
+url_free(data);
+```
+Call site 6:
+```rust
+url_free(data);
+```
+Call site 7:
+```rust
+url_free(data);
+```
+Call site 8:
+```rust
+url_free(data);
+```
+
+The file contains the following imports:
+```rust
+use ::libc;
+```
+```rust
+use std::char;
+```
+```rust
+use std::ptr;
+```
+```rust
+use std::ffi::{CString, CStr};
+```
+```rust
+CStr
+```
+```rust
+CString
+```
+Convert the function to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible. Do not change the function name.
+
+Follow the following format for your output: Place the function translation between the tags <FUNC> and </FUNC>. If the function signature changed in translation, its callsites will need to be modified as well. Place each callsite translation (in the same order it appears above) between <CALL> and </CALL>. Note that even if the callsite is only a single statement, the translation can be mutiple statements. For example, you may need to declare new variables, or convert between types, either before or after the call. The translation should be such that the surrounding code is not affected by the changes.
+
+
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:50 ~ oxidate_out[187d]::url_parse)
+Chunk 0
+Here is a piece of code from a larger function:
+```rust
+/*
+The variables live at this point are:
+(mut url: *const i8, mut p_end: *const i8, mut is_ssh: bool, mut hostname_end: *mut i8, mut current_block: u64, mut data: *mut url_data, mut p: *mut i8, is_ssh: bool)
+*/
+hostname_end = 0 as *mut libc::c_char;
+                            if *p as libc::c_int == '[' as i32 {
+                                p = p.offset(1);
+                                p;
+                                hostname_end = scan_part(
+                                    p,
+                                    IPv6Char,
+                                    ']' as i32 as libc::c_char,
+                                    '\0' as i32 as libc::c_char,
+                                );
+                                if hostname_end.is_null() {
+                                    fprintf(
+                                        stderr,
+                                        b"ERROR %s Line %u! p=\xC2\xAB%s\xC2\xBB\n\0" as *const u8
+                                            as *const libc::c_char,
+                                        b"/workspace/programs/url/url.c\0" as *const u8
+                                            as *const libc::c_char,
+                                        234 as libc::c_int,
+                                        p,
+                                    );
+                                    current_block = 17635118975278168935;
+                                } else {
+                                    *hostname_end = '\0' as i32 as libc::c_char;
+                                    (*data).host = p;
+                                    hostname_end = hostname_end.offset(1);
+                                    hostname_end;
+                                    if hostname_end < p_end as *mut libc::c_char && !is_ssh
+                                        && *hostname_end as libc::c_int == ':' as i32
+                                    {
+                                        let mut port_end = scan_decimal_number(
+                                            hostname_end.offset(1 as libc::c_int as isize),
+                                        );
+                                        if !port_end.is_null() {
+                                            (*data)
+                                                .port = hostname_end.offset(1 as libc::c_int as isize);
+                                            p = port_end;
+                                            current_block = 7252614138838059896;
+                                        } else {
+                                            fprintf(
+                                                stderr,
+                                                b"ERROR %s Line %u! p=\xC2\xAB%s\xC2\xBB\n\0" as *const u8
+                                                    as *const libc::c_char,
+                                                b"/workspace/programs/url/url.c\0" as *const u8
+                                                    as *const libc::c_char,
+                                                247 as libc::c_int,
+                                                p,
+                                            );
+                                            current_block = 17635118975278168935;
+                                        }
+                                    } else {
+                                        p = hostname_end;
+                                        current_block = 7252614138838059896;
+                                    }
+                                }
+                            } else {
+                                hostname_end = scan_part(
+                                    p,
+                                    (Unreserved as libc::c_int | SubDelim as libc::c_int)
+                                        as Category,
+                                    ':' as i32 as libc::c_char,
+                                    '/' as i32 as libc::c_char,
+                                );
+                                if hostname_end.is_null() {
+                                    fprintf(
+                                        stderr,
+                                        b"ERROR %s Line %u! p=\xC2\xAB%s\xC2\xBB\n\0" as *const u8
+                                            as *const libc::c_char,
+                                        b"/workspace/programs/url/url.c\0" as *const u8
+                                            as *const libc::c_char,
+                                        255 as libc::c_int,
+                                        p,
+                                    );
+                                    current_block = 17635118975278168935;
+                                } else {
+                                    (*data).host = p;
+                                    if !is_ssh && *hostname_end as libc::c_int == ':' as i32 {
+                                        *hostname_end = '\0' as i32 as libc::c_char;
+                                        let mut port_end_0 = scan_decimal_number(
+                                            hostname_end.offset(1 as libc::c_int as isize),
+                                        );
+                                        if !port_end_0.is_null() {
+                                            (*data)
+                                                .port = hostname_end.offset(1 as libc::c_int as isize);
+                                            p = port_end_0;
+                                            current_block = 7252614138838059896;
+                                        } else {
+                                            fprintf(
+                                                stderr,
+                                                b"ERROR %s Line %u! p=\xC2\xAB%s\xC2\xBB\n\0" as *const u8
+                                                    as *const libc::c_char,
+                                                b"/workspace/programs/url/url.c\0" as *const u8
+                                                    as *const libc::c_char,
+                                                267 as libc::c_int,
+                                                p,
+                                            );
+                                            current_block = 17635118975278168935;
+                                        }
+                                    } else {
+                                        p = hostname_end;
+                                        current_block = 7252614138838059896;
+                                    }
+                                }
+                            }
+/*
+The variables live at this point are:
+(mut url: *const i8, mut p_end: *const i8, mut is_ssh: bool, mut hostname_end: *mut i8, mut current_block: u64, mut data: *mut url_data, mut p: *mut i8, is_ssh: bool)
+*/
+```
+The function uses the following global variables:
+```rust
+pub const Unreserved: Category = 2;
+```
+```rust
+pub const IPv6Char: Category = 256;
+```
+```rust
+pub const Userinfo: Category = 128;
+```
+```rust
+pub const PCharSlash: Category = 16;
+```
+```rust
+pub const Fragment: Category = 64;
+```
+```rust
+pub const Scheme: Category = 1;
+```
+```rust
+pub const Query: Category = 64;
+```
+```rust
+pub const SubDelim: Category = 8;
+```
+The file contains the following imports:
+```rust
+use std::boxed::Box;
+```
+```rust
+use std::char;
+```
+```rust
+use std::ffi::{CString, CStr};
+```
+```rust
+use std::ptr;
+```
+```rust
+CString
+```
+```rust
+CStr
+```
+```rust
+use ::libc;
+```
+Convert this piece of code to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible.
+Follow the following format for your output: Place the translation between the tags <FUNC> and </FUNC>.
+
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:50 ~ oxidate_out[187d]::url_parse)
+Chunk 1
+Here is a piece of code from a larger function:
+```rust
+/*
+The variables live at this point are:
+(mut url: *const i8, mut is_ssh: bool, mut second_slash: *mut i8, mut path_end: *mut i8, mut has_query: bool, mut has_fragment: bool, mut current_block: u64, mut data: *mut url_data, mut p: *mut i8, is_ssh: bool)
+*/
+match current_block {
+                                17635118975278168935 => {}
+                                _ => {
+                                    memmove(
+                                        second_slash as *mut libc::c_void,
+                                        second_slash.offset(1 as libc::c_int as isize)
+                                            as *const libc::c_void,
+                                        p.offset_from(second_slash) as libc::c_long as libc::c_ulong,
+                                    );
+                                    if !((*data).userinfo).is_null() {
+                                        (*data).userinfo = ((*data).userinfo).offset(-1);
+                                        (*data).userinfo;
+                                    }
+                                    (*data).host = ((*data).host).offset(-1);
+                                    (*data).host;
+                                    if !((*data).port).is_null() {
+                                        (*data).port = ((*data).port).offset(-1);
+                                        (*data).port;
+                                    }
+                                    *p
+                                        .offset(
+                                            -(1 as libc::c_int) as isize,
+                                        ) = '\0' as i32 as libc::c_char;
+                                    if is_ssh as libc::c_int != 0
+                                        && *p as libc::c_int == ':' as i32
+                                    {
+                                        p = p.offset(1);
+                                        p;
+                                    }
+                                    path_end = scan_part(
+                                        p,
+                                        PCharSlash,
+                                        '?' as i32 as libc::c_char,
+                                        '#' as i32 as libc::c_char,
+                                    );
+                                    if path_end.is_null() {
+                                        fprintf(
+                                            stderr,
+                                            b"ERROR %s Line %u! p=\xC2\xAB%s\xC2\xBB\n\0" as *const u8
+                                                as *const libc::c_char,
+                                            b"/workspace/programs/url/url.c\0" as *const u8
+                                                as *const libc::c_char,
+                                            295 as libc::c_int,
+                                            p,
+                                        );
+                                    } else {
+                                        has_query = *path_end as libc::c_int == '?' as i32;
+                                        has_fragment = *path_end as libc::c_int == '#' as i32;
+                                        *path_end = '\0' as i32 as libc::c_char;
+                                        (*data).path = decode_percent(p);
+                                        p = path_end.offset(1 as libc::c_int as isize);
+                                        if has_query {
+                                            let mut query_end = scan_part(
+                                                p,
+                                                Query,
+                                                '#' as i32 as libc::c_char,
+                                                '\0' as i32 as libc::c_char,
+                                            );
+                                            if !query_end.is_null() {
+                                                let has_fragment_0 = *query_end as libc::c_int
+                                                    == '#' as i32;
+                                                *query_end = '\0' as i32 as libc::c_char;
+                                                (*data).query = parse_query_string(p, query_end);
+                                                if has_fragment_0 {
+                                                    let mut fragment_end = scan_part(
+                                                        query_end.offset(1 as libc::c_int as isize),
+                                                        Fragment,
+                                                        '\0' as i32 as libc::c_char,
+                                                        '\0' as i32 as libc::c_char,
+                                                    );
+                                                    if !fragment_end.is_null() {
+                                                        (*data)
+                                                            .fragment = decode_percent(
+                                                            query_end.offset(1 as libc::c_int as isize),
+                                                        );
+                                                        current_block = 6406431739208918833;
+                                                    } else {
+                                                        fprintf(
+                                                            stderr,
+                                                            b"ERROR %s Line %u! p=\xC2\xAB%s\xC2\xBB\n\0" as *const u8
+                                                                as *const libc::c_char,
+                                                            b"/workspace/programs/url/url.c\0" as *const u8
+                                                                as *const libc::c_char,
+                                                            319 as libc::c_int,
+                                                            p,
+                                                        );
+                                                        current_block = 17635118975278168935;
+                                                    }
+                                                } else {
+                                                    current_block = 6406431739208918833;
+                                                }
+                                            } else {
+                                                fprintf(
+                                                    stderr,
+                                                    b"ERROR %s Line %u! p=\xC2\xAB%s\xC2\xBB\n\0" as *const u8
+                                                        as *const libc::c_char,
+                                                    b"/workspace/programs/url/url.c\0" as *const u8
+                                                        as *const libc::c_char,
+                                                    323 as libc::c_int,
+                                                    p,
+                                                );
+                                                current_block = 17635118975278168935;
+                                            }
+                                        } else if has_fragment {
+                                            let mut fragment_end_0 = scan_part(
+                                                p,
+                                                Fragment,
+                                                '\0' as i32 as libc::c_char,
+                                                '\0' as i32 as libc::c_char,
+                                            );
+                                            if !fragment_end_0.is_null() {
+                                                (*data).fragment = decode_percent(p);
+                                                current_block = 6406431739208918833;
+                                            } else {
+                                                fprintf(
+                                                    stderr,
+                                                    b"ERROR %s Line %u! p=\xC2\xAB%s\xC2\xBB\n\0" as *const u8
+                                                        as *const libc::c_char,
+                                                    b"/workspace/programs/url/url.c\0" as *const u8
+                                                        as *const libc::c_char,
+                                                    332 as libc::c_int,
+                                                    p,
+                                                );
+                                                current_block = 17635118975278168935;
+                                            }
+                                        } else {
+                                            current_block = 6406431739208918833;
+                                        }
+                                        match current_block {
+                                            17635118975278168935 => {}
+                                            _ => return data,
+                                        }
+                                    }
+                                }
+                            }
+/*
+The variables live at this point are:
+(mut url: *const i8, mut is_ssh: bool, mut second_slash: *mut i8, mut path_end: *mut i8, mut has_query: bool, mut has_fragment: bool, mut current_block: u64, mut data: *mut url_data, mut p: *mut i8, is_ssh: bool)
+*/
+```
+The function uses the following global variables:
+```rust
+pub const Unreserved: Category = 2;
+```
+```rust
+pub const IPv6Char: Category = 256;
+```
+```rust
+pub const Userinfo: Category = 128;
+```
+```rust
+pub const PCharSlash: Category = 16;
+```
+```rust
+pub const Fragment: Category = 64;
+```
+```rust
+pub const Scheme: Category = 1;
+```
+```rust
+pub const Query: Category = 64;
+```
+```rust
+pub const SubDelim: Category = 8;
+```
+The file contains the following imports:
+```rust
+use std::boxed::Box;
+```
+```rust
+use std::char;
+```
+```rust
+use std::ffi::{CString, CStr};
+```
+```rust
+use std::ptr;
+```
+```rust
+CString
+```
+```rust
+CStr
+```
+```rust
+use ::libc;
+```
+Convert this piece of code to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible.
+Follow the following format for your output: Place the translation between the tags <FUNC> and </FUNC>.
+
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:50 ~ oxidate_out[187d]::url_parse)
+Chunk 2
+Here is a piece of code from a larger function:
+```rust
+/*
+The variables live at this point are:
+(mut url: *const i8, mut p_end: *const i8, mut is_ssh: bool, mut second_slash: *mut i8, mut userinfo_end: *mut i8, mut hostname_end: *mut i8, mut path_end: *mut i8, mut has_query: bool, mut has_fragment: bool, mut current_block: u64, mut data: *mut url_data, mut p: *mut i8, is_ssh: bool)
+*/
+userinfo_end = scan_part(
+                            p,
+                            Userinfo,
+                            '@' as i32 as libc::c_char,
+                            '\0' as i32 as libc::c_char,
+                        );
+                        if !userinfo_end.is_null()
+                            && *userinfo_end as libc::c_int == '@' as i32
+                        {
+                            *userinfo_end = '\0' as i32 as libc::c_char;
+                            (*data).userinfo = p;
+                            p = userinfo_end.offset(1 as libc::c_int as isize);
+                        }
+                        if p >= p_end as *mut libc::c_char {
+                            fprintf(
+                                stderr,
+                                b"ERROR %s Line %u! p=\xC2\xAB%s\xC2\xBB\n\0" as *const u8
+                                    as *const libc::c_char,
+                                b"/workspace/programs/url/url.c\0" as *const u8
+                                    as *const libc::c_char,
+                                225 as libc::c_int,
+                                p,
+                            );
+                        } else {
+                           /* <CHUNK>
+        Some code here that uses the following variables:
+        (mut url: *const i8, mut p_end: *const i8, mut is_ssh: bool, mut hostname_end: *mut i8, mut current_block: u64, mut data: *mut url_data, mut p: *mut i8, is_ssh: bool)
+        At the end of this chunk, the following variables are live:
+        (mut url: *const i8, mut p_end: *const i8, mut is_ssh: bool, mut hostname_end: *mut i8, mut current_block: u64, mut data: *mut url_data, mut p: *mut i8, is_ssh: bool)
+        </CHUNK> */                           /* <CHUNK>
+        Some code here that uses the following variables:
+        (mut url: *const i8, mut is_ssh: bool, mut second_slash: *mut i8, mut path_end: *mut i8, mut has_query: bool, mut has_fragment: bool, mut current_block: u64, mut data: *mut url_data, mut p: *mut i8, is_ssh: bool)
+        At the end of this chunk, the following variables are live:
+        (mut url: *const i8, mut is_ssh: bool, mut second_slash: *mut i8, mut path_end: *mut i8, mut has_query: bool, mut has_fragment: bool, mut current_block: u64, mut data: *mut url_data, mut p: *mut i8, is_ssh: bool)
+        </CHUNK> */                        }
+/*
+The variables live at this point are:
+(mut url: *const i8, mut p_end: *const i8, mut is_ssh: bool, mut second_slash: *mut i8, mut userinfo_end: *mut i8, mut hostname_end: *mut i8, mut path_end: *mut i8, mut has_query: bool, mut has_fragment: bool, mut current_block: u64, mut data: *mut url_data, mut p: *mut i8, is_ssh: bool)
+*/
+```
+The function uses the following global variables:
+```rust
+pub const Unreserved: Category = 2;
+```
+```rust
+pub const IPv6Char: Category = 256;
+```
+```rust
+pub const Userinfo: Category = 128;
+```
+```rust
+pub const PCharSlash: Category = 16;
+```
+```rust
+pub const Fragment: Category = 64;
+```
+```rust
+pub const Scheme: Category = 1;
+```
+```rust
+pub const Query: Category = 64;
+```
+```rust
+pub const SubDelim: Category = 8;
+```
+The file contains the following imports:
+```rust
+use std::boxed::Box;
+```
+```rust
+use std::char;
+```
+```rust
+use std::ffi::{CString, CStr};
+```
+```rust
+use std::ptr;
+```
+```rust
+CString
+```
+```rust
+CStr
+```
+```rust
+use ::libc;
+```
+Convert this piece of code to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible.
+Follow the following format for your output: Place the translation between the tags <FUNC> and </FUNC>.
+There are some pieces of code that are not shown here, between the tags <CHUNK> and </CHUNK>. Note the variables that are live at the beginning and end of each chunk, and ensure that the translation of the surrounding code maintains these variables. You cannot change the variables that are live at the beginning and end of each chunk. In your translation, make sure that these comments containing chunks are preserved. In other words, keep the portions with /* <CHUNK> ... </CHUNK> */ unchanged.
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:50 ~ oxidate_out[187d]::url_parse)
+Chunk 3
+Here is a piece of code from a larger function:
+```rust
+/*
+The variables live at this point are:
+(mut url: *const i8, mut p_end: *const i8, mut is_ssh: bool, mut second_slash: *mut i8, mut userinfo_end: *mut i8, mut hostname_end: *mut i8, mut path_end: *mut i8, mut has_query: bool, mut has_fragment: bool, mut current_block: u64, mut data: *mut url_data, mut p: *mut i8, is_ssh: bool)
+*/
+second_slash = p;
+                    p = p.offset(1);
+                    p;
+                    if p >= p_end as *mut libc::c_char {
+                        fprintf(
+                            stderr,
+                            b"ERROR %s Line %u! p=\xC2\xAB%s\xC2\xBB\n\0" as *const u8
+                                as *const libc::c_char,
+                            b"/workspace/programs/url/url.c\0" as *const u8
+                                as *const libc::c_char,
+                            215 as libc::c_int,
+                            p,
+                        );
+                    } else {
+                       /* <CHUNK>
+        Some code here that uses the following variables:
+        (mut url: *const i8, mut p_end: *const i8, mut is_ssh: bool, mut second_slash: *mut i8, mut userinfo_end: *mut i8, mut hostname_end: *mut i8, mut path_end: *mut i8, mut has_query: bool, mut has_fragment: bool, mut current_block: u64, mut data: *mut url_data, mut p: *mut i8, is_ssh: bool)
+        At the end of this chunk, the following variables are live:
+        (mut url: *const i8, mut p_end: *const i8, mut is_ssh: bool, mut second_slash: *mut i8, mut userinfo_end: *mut i8, mut hostname_end: *mut i8, mut path_end: *mut i8, mut has_query: bool, mut has_fragment: bool, mut current_block: u64, mut data: *mut url_data, mut p: *mut i8, is_ssh: bool)
+        </CHUNK> */                    }
+/*
+The variables live at this point are:
+(mut url: *const i8, mut p_end: *const i8, mut is_ssh: bool, mut second_slash: *mut i8, mut userinfo_end: *mut i8, mut hostname_end: *mut i8, mut path_end: *mut i8, mut has_query: bool, mut has_fragment: bool, mut current_block: u64, mut data: *mut url_data, mut p: *mut i8, is_ssh: bool)
+*/
+```
+The function uses the following global variables:
+```rust
+pub const Unreserved: Category = 2;
+```
+```rust
+pub const IPv6Char: Category = 256;
+```
+```rust
+pub const Userinfo: Category = 128;
+```
+```rust
+pub const PCharSlash: Category = 16;
+```
+```rust
+pub const Fragment: Category = 64;
+```
+```rust
+pub const Scheme: Category = 1;
+```
+```rust
+pub const Query: Category = 64;
+```
+```rust
+pub const SubDelim: Category = 8;
+```
+The file contains the following imports:
+```rust
+use std::boxed::Box;
+```
+```rust
+use std::char;
+```
+```rust
+use std::ffi::{CString, CStr};
+```
+```rust
+use std::ptr;
+```
+```rust
+CString
+```
+```rust
+CStr
+```
+```rust
+use ::libc;
+```
+Convert this piece of code to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible.
+Follow the following format for your output: Place the translation between the tags <FUNC> and </FUNC>.
+There are some pieces of code that are not shown here, between the tags <CHUNK> and </CHUNK>. Note the variables that are live at the beginning and end of each chunk, and ensure that the translation of the surrounding code maintains these variables. You cannot change the variables that are live at the beginning and end of each chunk. In your translation, make sure that these comments containing chunks are preserved. In other words, keep the portions with /* <CHUNK> ... </CHUNK> */ unchanged.
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:50 ~ oxidate_out[187d]::url_parse)
+Chunk 4
+Here is a piece of code from a larger function:
+```rust
+/*
+The variables live at this point are:
+(mut url: *const i8, mut p_end: *const i8, mut is_ssh: bool, mut second_slash: *mut i8, mut userinfo_end: *mut i8, mut hostname_end: *mut i8, mut path_end: *mut i8, mut has_query: bool, mut has_fragment: bool, mut current_block: u64, mut data: *mut url_data, mut p: *mut i8, is_ssh: bool)
+*/
+p = p.offset(1);
+                p;
+                if p >= p_end as *mut libc::c_char || *p as libc::c_int != '/' as i32 {
+                    fprintf(
+                        stderr,
+                        b"ERROR %s Line %u! p=\xC2\xAB%s\xC2\xBB\n\0" as *const u8
+                            as *const libc::c_char,
+                        b"/workspace/programs/url/url.c\0" as *const u8
+                            as *const libc::c_char,
+                        209 as libc::c_int,
+                        p,
+                    );
+                } else {
+                   /* <CHUNK>
+        Some code here that uses the following variables:
+        (mut url: *const i8, mut p_end: *const i8, mut is_ssh: bool, mut second_slash: *mut i8, mut userinfo_end: *mut i8, mut hostname_end: *mut i8, mut path_end: *mut i8, mut has_query: bool, mut has_fragment: bool, mut current_block: u64, mut data: *mut url_data, mut p: *mut i8, is_ssh: bool)
+        At the end of this chunk, the following variables are live:
+        (mut url: *const i8, mut p_end: *const i8, mut is_ssh: bool, mut second_slash: *mut i8, mut userinfo_end: *mut i8, mut hostname_end: *mut i8, mut path_end: *mut i8, mut has_query: bool, mut has_fragment: bool, mut current_block: u64, mut data: *mut url_data, mut p: *mut i8, is_ssh: bool)
+        </CHUNK> */                }
+/*
+The variables live at this point are:
+(mut url: *const i8, mut p_end: *const i8, mut is_ssh: bool, mut second_slash: *mut i8, mut userinfo_end: *mut i8, mut hostname_end: *mut i8, mut path_end: *mut i8, mut has_query: bool, mut has_fragment: bool, mut current_block: u64, mut data: *mut url_data, mut p: *mut i8, is_ssh: bool)
+*/
+```
+The function uses the following global variables:
+```rust
+pub const Unreserved: Category = 2;
+```
+```rust
+pub const IPv6Char: Category = 256;
+```
+```rust
+pub const Userinfo: Category = 128;
+```
+```rust
+pub const PCharSlash: Category = 16;
+```
+```rust
+pub const Fragment: Category = 64;
+```
+```rust
+pub const Scheme: Category = 1;
+```
+```rust
+pub const Query: Category = 64;
+```
+```rust
+pub const SubDelim: Category = 8;
+```
+The file contains the following imports:
+```rust
+use std::boxed::Box;
+```
+```rust
+use std::char;
+```
+```rust
+use std::ffi::{CString, CStr};
+```
+```rust
+use std::ptr;
+```
+```rust
+CString
+```
+```rust
+CStr
+```
+```rust
+use ::libc;
+```
+Convert this piece of code to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible.
+Follow the following format for your output: Place the translation between the tags <FUNC> and </FUNC>.
+There are some pieces of code that are not shown here, between the tags <CHUNK> and </CHUNK>. Note the variables that are live at the beginning and end of each chunk, and ensure that the translation of the surrounding code maintains these variables. You cannot change the variables that are live at the beginning and end of each chunk. In your translation, make sure that these comments containing chunks are preserved. In other words, keep the portions with /* <CHUNK> ... </CHUNK> */ unchanged.
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:50 ~ oxidate_out[187d]::url_parse)
+Chunk 5
+Here is a piece of code from a larger function:
+```rust
+/*
+The variables live at this point are:
+(mut url: *const i8, mut p_end: *const i8, mut protocol_end: *mut i8, mut is_ssh: bool, mut second_slash: *mut i8, mut userinfo_end: *mut i8, mut hostname_end: *mut i8, mut path_end: *mut i8, mut has_query: bool, mut has_fragment: bool, mut current_block: u64, mut data: *mut url_data, mut p: *mut i8)
+*/
+*protocol_end = '\0' as i32 as libc::c_char;
+            (*data).protocol = p;
+            is_ssh = url_is_ssh((*data).protocol);
+            p = protocol_end.offset(1 as libc::c_int as isize);
+            if p >= p_end as *mut libc::c_char || *p as libc::c_int != '/' as i32 {
+                fprintf(
+                    stderr,
+                    b"ERROR %s Line %u! p=\xC2\xAB%s\xC2\xBB\n\0" as *const u8
+                        as *const libc::c_char,
+                    b"/workspace/programs/url/url.c\0" as *const u8
+                        as *const libc::c_char,
+                    205 as libc::c_int,
+                    p,
+                );
+            } else {
+               /* <CHUNK>
+        Some code here that uses the following variables:
+        (mut url: *const i8, mut p_end: *const i8, mut is_ssh: bool, mut second_slash: *mut i8, mut userinfo_end: *mut i8, mut hostname_end: *mut i8, mut path_end: *mut i8, mut has_query: bool, mut has_fragment: bool, mut current_block: u64, mut data: *mut url_data, mut p: *mut i8, is_ssh: bool)
+        At the end of this chunk, the following variables are live:
+        (mut url: *const i8, mut p_end: *const i8, mut is_ssh: bool, mut second_slash: *mut i8, mut userinfo_end: *mut i8, mut hostname_end: *mut i8, mut path_end: *mut i8, mut has_query: bool, mut has_fragment: bool, mut current_block: u64, mut data: *mut url_data, mut p: *mut i8, is_ssh: bool)
+        </CHUNK> */            }
+/*
+The variables live at this point are:
+(mut url: *const i8, mut p_end: *const i8, mut protocol_end: *mut i8, mut is_ssh: bool, mut second_slash: *mut i8, mut userinfo_end: *mut i8, mut hostname_end: *mut i8, mut path_end: *mut i8, mut has_query: bool, mut has_fragment: bool, mut current_block: u64, mut data: *mut url_data, mut p: *mut i8, protocol_str: &str, is_ssh: bool)
+*/
+```
+The function uses the following global variables:
+```rust
+pub const Unreserved: Category = 2;
+```
+```rust
+pub const IPv6Char: Category = 256;
+```
+```rust
+pub const Userinfo: Category = 128;
+```
+```rust
+pub const PCharSlash: Category = 16;
+```
+```rust
+pub const Fragment: Category = 64;
+```
+```rust
+pub const Scheme: Category = 1;
+```
+```rust
+pub const Query: Category = 64;
+```
+```rust
+pub const SubDelim: Category = 8;
+```
+The file contains the following imports:
+```rust
+use std::boxed::Box;
+```
+```rust
+use std::char;
+```
+```rust
+use std::ffi::{CString, CStr};
+```
+```rust
+use std::ptr;
+```
+```rust
+CString
+```
+```rust
+CStr
+```
+```rust
+use ::libc;
+```
+Convert this piece of code to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible.
+Follow the following format for your output: Place the translation between the tags <FUNC> and </FUNC>.
+There are some pieces of code that are not shown here, between the tags <CHUNK> and </CHUNK>. Note the variables that are live at the beginning and end of each chunk, and ensure that the translation of the surrounding code maintains these variables. You cannot change the variables that are live at the beginning and end of each chunk. In your translation, make sure that these comments containing chunks are preserved. In other words, keep the portions with /* <CHUNK> ... </CHUNK> */ unchanged.
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:50 ~ oxidate_out[187d]::url_parse)
+Chunk 6
+Here is a piece of code from a larger function:
+```rust
+/*
+The variables live at this point are:
+(mut url: *const i8, mut p_end: *const i8, mut protocol_end: *mut i8, mut is_ssh: bool, mut second_slash: *mut i8, mut userinfo_end: *mut i8, mut hostname_end: *mut i8, mut path_end: *mut i8, mut has_query: bool, mut has_fragment: bool, mut current_block: u64, mut data: *mut url_data, mut p: *mut i8)
+*/
+(*data).whole_url = p;
+        p_end = p.offset(strlen(p) as isize);
+        protocol_end = scan_part(
+            p,
+            Scheme,
+            ':' as i32 as libc::c_char,
+            '\0' as i32 as libc::c_char,
+        );
+        if protocol_end.is_null() || *protocol_end as libc::c_int == '\0' as i32 {
+            fprintf(
+                stderr,
+                b"ERROR %s Line %u! p=\xC2\xAB%s\xC2\xBB\n\0" as *const u8
+                    as *const libc::c_char,
+                b"/workspace/programs/url/url.c\0" as *const u8 as *const libc::c_char,
+                197 as libc::c_int,
+                p,
+            );
+        } else {
+           /* <CHUNK>
+        Some code here that uses the following variables:
+        (mut url: *const i8, mut p_end: *const i8, mut protocol_end: *mut i8, mut is_ssh: bool, mut second_slash: *mut i8, mut userinfo_end: *mut i8, mut hostname_end: *mut i8, mut path_end: *mut i8, mut has_query: bool, mut has_fragment: bool, mut current_block: u64, mut data: *mut url_data, mut p: *mut i8)
+        At the end of this chunk, the following variables are live:
+        (mut url: *const i8, mut p_end: *const i8, mut protocol_end: *mut i8, mut is_ssh: bool, mut second_slash: *mut i8, mut userinfo_end: *mut i8, mut hostname_end: *mut i8, mut path_end: *mut i8, mut has_query: bool, mut has_fragment: bool, mut current_block: u64, mut data: *mut url_data, mut p: *mut i8, protocol_str: &str, is_ssh: bool)
+        </CHUNK> */        }
+/*
+The variables live at this point are:
+(mut url: *const i8, mut p_end: *const i8, mut protocol_end: *mut i8, mut is_ssh: bool, mut second_slash: *mut i8, mut userinfo_end: *mut i8, mut hostname_end: *mut i8, mut path_end: *mut i8, mut has_query: bool, mut has_fragment: bool, mut current_block: u64, mut data: *mut url_data, mut p: *mut i8)
+*/
+```
+The function uses the following global variables:
+```rust
+pub const Unreserved: Category = 2;
+```
+```rust
+pub const IPv6Char: Category = 256;
+```
+```rust
+pub const Userinfo: Category = 128;
+```
+```rust
+pub const PCharSlash: Category = 16;
+```
+```rust
+pub const Fragment: Category = 64;
+```
+```rust
+pub const Scheme: Category = 1;
+```
+```rust
+pub const Query: Category = 64;
+```
+```rust
+pub const SubDelim: Category = 8;
+```
+The file contains the following imports:
+```rust
+use std::boxed::Box;
+```
+```rust
+use std::char;
+```
+```rust
+use std::ffi::{CString, CStr};
+```
+```rust
+use std::ptr;
+```
+```rust
+CString
+```
+```rust
+CStr
+```
+```rust
+use ::libc;
+```
+Convert this piece of code to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible.
+Follow the following format for your output: Place the translation between the tags <FUNC> and </FUNC>.
+There are some pieces of code that are not shown here, between the tags <CHUNK> and </CHUNK>. Note the variables that are live at the beginning and end of each chunk, and ensure that the translation of the surrounding code maintains these variables. You cannot change the variables that are live at the beginning and end of each chunk. In your translation, make sure that these comments containing chunks are preserved. In other words, keep the portions with /* <CHUNK> ... </CHUNK> */ unchanged.
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:50 ~ oxidate_out[187d]::url_parse)
+Chunk 7
+Here is a piece of code from a larger function:
+```rust
+/*
+The variables live at this point are:
+(mut url: *const i8)
+*/
+let mut p_end: *const libc::c_char = 0 as *const libc::c_char;
+    let mut protocol_end: *mut libc::c_char = 0 as *mut libc::c_char;
+    let mut is_ssh: bool = false;
+    let mut second_slash: *mut libc::c_char = 0 as *mut libc::c_char;
+    let mut userinfo_end: *mut libc::c_char = 0 as *mut libc::c_char;
+    let mut hostname_end: *mut libc::c_char = 0 as *mut libc::c_char;
+    let mut path_end: *mut libc::c_char = 0 as *mut libc::c_char;
+    let mut has_query: bool = false;
+    let mut has_fragment: bool = false;
+    let mut current_block: u64;
+    let mut data = calloc(
+        1 as libc::c_int as libc::c_ulong,
+        ::core::mem::size_of::<url_data_t>() as libc::c_ulong,
+    ) as *mut url_data_t;
+    if data.is_null() {
+        return 0 as *mut url_data_t;
+    }
+    let mut p = strdup(url);
+    if p.is_null() {
+        fprintf(
+            stderr,
+            b"ERROR %s Line %u! p=\xC2\xAB%s\xC2\xBB\n\0" as *const u8
+                as *const libc::c_char,
+            b"/workspace/programs/url/url.c\0" as *const u8 as *const libc::c_char,
+            190 as libc::c_int,
+            p,
+        );
+    } else {
+       /* <CHUNK>
+        Some code here that uses the following variables:
+        (mut url: *const i8, mut p_end: *const i8, mut protocol_end: *mut i8, mut is_ssh: bool, mut second_slash: *mut i8, mut userinfo_end: *mut i8, mut hostname_end: *mut i8, mut path_end: *mut i8, mut has_query: bool, mut has_fragment: bool, mut current_block: u64, mut data: *mut url_data, mut p: *mut i8)
+        At the end of this chunk, the following variables are live:
+        (mut url: *const i8, mut p_end: *const i8, mut protocol_end: *mut i8, mut is_ssh: bool, mut second_slash: *mut i8, mut userinfo_end: *mut i8, mut hostname_end: *mut i8, mut path_end: *mut i8, mut has_query: bool, mut has_fragment: bool, mut current_block: u64, mut data: *mut url_data, mut p: *mut i8)
+        </CHUNK> */    }
+    url_free(data);
+    return 0 as *mut url_data_t;
+/*
+The variables live at this point are:
+(mut url: *const i8, mut p_end: *const i8, mut protocol_end: *mut i8, mut is_ssh: bool, mut second_slash: *mut i8, mut userinfo_end: *mut i8, mut hostname_end: *mut i8, mut path_end: *mut i8, mut has_query: bool, mut has_fragment: bool, mut current_block: u64, mut data: *mut url_data, mut p: *mut i8)
+*/
+```
+The function uses the following global variables:
+```rust
+pub const Unreserved: Category = 2;
+```
+```rust
+pub const IPv6Char: Category = 256;
+```
+```rust
+pub const Userinfo: Category = 128;
+```
+```rust
+pub const PCharSlash: Category = 16;
+```
+```rust
+pub const Fragment: Category = 64;
+```
+```rust
+pub const Scheme: Category = 1;
+```
+```rust
+pub const Query: Category = 64;
+```
+```rust
+pub const SubDelim: Category = 8;
+```
+The file contains the following imports:
+```rust
+use std::boxed::Box;
+```
+```rust
+use std::char;
+```
+```rust
+use std::ffi::{CString, CStr};
+```
+```rust
+use std::ptr;
+```
+```rust
+CString
+```
+```rust
+CStr
+```
+```rust
+use ::libc;
+```
+Convert this piece of code to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible.
+Follow the following format for your output: Place the translation between the tags <FUNC> and </FUNC>.
+There are some pieces of code that are not shown here, between the tags <CHUNK> and </CHUNK>. Note the variables that are live at the beginning and end of each chunk, and ensure that the translation of the surrounding code maintains these variables. You cannot change the variables that are live at the beginning and end of each chunk. In your translation, make sure that these comments containing chunks are preserved. In other words, keep the portions with /* <CHUNK> ... </CHUNK> */ unchanged.
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:50 ~ oxidate_out[187d]::url_parse)
+Chunk root
+Here is a function:
+```rust
+pub unsafe extern "C" fn url_parse(mut url: *const libc::c_char) -> *mut url_data_t {
+   /* <CHUNK>
+        Some code here that uses the following variables:
+        (mut url: *const i8)
+        At the end of this chunk, the following variables are live:
+        (mut url: *const i8, mut p_end: *const i8, mut protocol_end: *mut i8, mut is_ssh: bool, mut second_slash: *mut i8, mut userinfo_end: *mut i8, mut hostname_end: *mut i8, mut path_end: *mut i8, mut has_query: bool, mut has_fragment: bool, mut current_block: u64, mut data: *mut url_data, mut p: *mut i8)
+        </CHUNK> */}
+```
+Here are its call sites
+Call site 1:
+```rust
+url_data_inspect(url_parse(url));
+```
+Call site 2:
+```rust
+let mut data = url_parse(url);
+```
+Call site 3:
+```rust
+let mut data = url_parse(url);
+```
+Call site 4:
+```rust
+let mut data = url_parse(url);
+```
+Call site 5:
+```rust
+let mut data = url_parse(url);
+```
+Call site 6:
+```rust
+let mut data = url_parse(url);
+```
+Call site 7:
+```rust
+let mut data = url_parse(url);
+```
+Call site 8:
+```rust
+let mut data = url_parse(url);
+```
+The function uses the following global variables:
+```rust
+pub const Unreserved: Category = 2;
+```
+```rust
+pub const IPv6Char: Category = 256;
+```
+```rust
+pub const Userinfo: Category = 128;
+```
+```rust
+pub const PCharSlash: Category = 16;
+```
+```rust
+pub const Fragment: Category = 64;
+```
+```rust
+pub const Scheme: Category = 1;
+```
+```rust
+pub const Query: Category = 64;
+```
+```rust
+pub const SubDelim: Category = 8;
+```
+The file contains the following imports:
+```rust
+use std::boxed::Box;
+```
+```rust
+use std::char;
+```
+```rust
+use std::ffi::{CString, CStr};
+```
+```rust
+use std::ptr;
+```
+```rust
+CString
+```
+```rust
+CStr
+```
+```rust
+use ::libc;
+```
+Convert the function to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible. Do not change the function name.
+
+Follow the following format for your output: Place the function translation between the tags <FUNC> and </FUNC>. If the function signature changed in translation, its callsites will need to be modified as well. Place each callsite translation (in the same order it appears above) between <CALL> and </CALL>. Note that even if the callsite is only a single statement, the translation can be mutiple statements. For example, you may need to declare new variables, or convert between types, either before or after the call. The translation should be such that the surrounding code is not affected by the changes.
+
+There are some pieces of code that are not shown here, in comments between the tags <CHUNK> and </CHUNK>. Note the variables that are live at the beginning and end of each chunk, and ensure that the translation of the surrounding code maintains these variables. You cannot change the variables that are live at the beginning and end of each chunk.In your translation, make sure that these comments containing chunks are preserved. In other words, keep the portions with /* <CHUNK> ... </CHUNK> */ unchanged.
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:61 ~ oxidate_out[187d]::url_get_fragment)
+Chunk root
+Here is a function:
+```rust
+pub unsafe extern "C" fn url_get_fragment(
+    mut url: *const libc::c_char,
+) -> *mut libc::c_char {
+    let mut data = url_parse(url);
+    let mut out = if !data.is_null() && !((*data).fragment).is_null() {
+        strdup((*data).fragment)
+    } else {
+        0 as *mut libc::c_char
+    };
+    url_free(data);
+    return out;
+}
+```
+Here are its call sites
+Call site 1:
+```rust
+return url_get_fragment(url);
+```
+
+The file contains the following imports:
+```rust
+CString
+```
+```rust
+use std::boxed::Box;
+```
+```rust
+use ::libc;
+```
+```rust
+use std::ffi::{CString, CStr};
+```
+```rust
+CStr
+```
+```rust
+use std::char;
+```
+```rust
+use std::ptr;
+```
+Convert the function to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible. Do not change the function name.
+
+Follow the following format for your output: Place the function translation between the tags <FUNC> and </FUNC>. If the function signature changed in translation, its callsites will need to be modified as well. Place each callsite translation (in the same order it appears above) between <CALL> and </CALL>. Note that even if the callsite is only a single statement, the translation can be mutiple statements. For example, you may need to declare new variables, or convert between types, either before or after the call. The translation should be such that the surrounding code is not affected by the changes.
+
+
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:64 ~ oxidate_out[187d]::url_data_inspect)
+Chunk root
+Here is a function:
+```rust
+pub unsafe extern "C" fn url_data_inspect(mut data: *const url_data_t) {
+    printf(b"#url =>\n\0" as *const u8 as *const libc::c_char);
+    if !((*data).protocol).is_null() {
+        printf(
+            b"    .protocol: \"%s\"\n\0" as *const u8 as *const libc::c_char,
+            (*data).protocol,
+        );
+    } else {
+        printf(b"    .protocol: (NULL)\n\0" as *const u8 as *const libc::c_char);
+    }
+    if !((*data).host).is_null() {
+        printf(
+            b"    .host: \"%s\"\n\0" as *const u8 as *const libc::c_char,
+            (*data).host,
+        );
+    } else {
+        printf(b"    .host: (NULL)\n\0" as *const u8 as *const libc::c_char);
+    }
+    if !((*data).userinfo).is_null() {
+        printf(
+            b"    .userinfo: \"%s\"\n\0" as *const u8 as *const libc::c_char,
+            (*data).userinfo,
+        );
+    } else {
+        printf(b"    .userinfo: (NULL)\n\0" as *const u8 as *const libc::c_char);
+    }
+    if !((*data).host).is_null() {
+        printf(
+            b"    .host: \"%s\"\n\0" as *const u8 as *const libc::c_char,
+            (*data).host,
+        );
+    } else {
+        printf(b"    .host: (NULL)\n\0" as *const u8 as *const libc::c_char);
+    }
+    if !((*data).port).is_null() {
+        printf(
+            b"    .port: \"%s\"\n\0" as *const u8 as *const libc::c_char,
+            (*data).port,
+        );
+    } else {
+        printf(b"    .port: (NULL)\n\0" as *const u8 as *const libc::c_char);
+    }
+    if !((*data).path).is_null() {
+        printf(
+            b"    .path: \"%s\"\n\0" as *const u8 as *const libc::c_char,
+            (*data).path,
+        );
+    } else {
+        printf(b"    .path: (NULL)\n\0" as *const u8 as *const libc::c_char);
+    }
+    if !((*data).query).is_null() {
+        let mut nr = 0 as libc::c_int as libc::c_uint;
+        while !((*((*data).query).offset(nr as isize)).key).is_null() {
+            printf(
+                b"    .query[%u]: \"%s\" -> \0" as *const u8 as *const libc::c_char,
+                nr,
+                (*((*data).query).offset(nr as isize)).key,
+            );
+            if !((*((*data).query).offset(nr as isize)).value).is_null() {
+                printf(
+                    b"\"%s\"\n\0" as *const u8 as *const libc::c_char,
+                    (*((*data).query).offset(nr as isize)).value,
+                );
+            } else {
+                printf(b"(NULL)\n\0" as *const u8 as *const libc::c_char);
+            }
+            nr = nr.wrapping_add(1);
+            nr;
+        }
+    }
+    if !((*data).fragment).is_null() {
+        printf(
+            b"    .fragment: \"%s\"\n\0" as *const u8 as *const libc::c_char,
+            (*data).fragment,
+        );
+    } else {
+        printf(b"    .fragment: (NULL)\n\0" as *const u8 as *const libc::c_char);
+    };
+}
+```
+Here are its call sites
+Call site 1:
+```rust
+url_data_inspect(url_parse(url));
+```
+
+The file contains the following imports:
+```rust
+use std::char;
+```
+```rust
+use std::ptr;
+```
+```rust
+use ::libc;
+```
+```rust
+CStr
+```
+```rust
+use std::boxed::Box;
+```
+```rust
+use std::ffi::{CString, CStr};
+```
+```rust
+CString
+```
+Convert the function to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible. Do not change the function name.
+
+Follow the following format for your output: Place the function translation between the tags <FUNC> and </FUNC>. If the function signature changed in translation, its callsites will need to be modified as well. Place each callsite translation (in the same order it appears above) between <CALL> and </CALL>. Note that even if the callsite is only a single statement, the translation can be mutiple statements. For example, you may need to declare new variables, or convert between types, either before or after the call. The translation should be such that the surrounding code is not affected by the changes.
+
+
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:39 ~ oxidate_out[187d]::url_get_hash)
+Chunk root
+Here is a function:
+```rust
+unsafe extern "C" fn url_get_hash(mut url: *const libc::c_char) -> *mut libc::c_char {
+    return url_get_fragment(url);
+}
+```
+
+
+The file contains the following imports:
+```rust
+use std::boxed::Box;
+```
+```rust
+use std::ffi::{CString, CStr};
+```
+```rust
+use std::char;
+```
+```rust
+CStr
+```
+```rust
+use crate::url_data_t as UrlData;
+```
+```rust
+use ::libc;
+```
+```rust
+CString
+```
+```rust
+use std::ptr;
+```
+Convert the function to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible. Do not change the function name.
+
+Follow the following format for your output: Place the function translation between the tags <FUNC> and </FUNC>. 
+
+
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:63 ~ oxidate_out[187d]::url_inspect)
+Chunk root
+Here is a function:
+```rust
+pub unsafe extern "C" fn url_inspect(mut url: *const libc::c_char) {
+    url_data_inspect(url_parse(url));
+}
+```
+
+
+The file contains the following imports:
+```rust
+use ::libc;
+```
+```rust
+CStr
+```
+```rust
+use std::char;
+```
+```rust
+use std::ffi::{CString, CStr};
+```
+```rust
+use std::boxed::Box;
+```
+```rust
+use std::ptr;
+```
+```rust
+CString
+```
+```rust
+use crate::url_data_t as UrlData;
+```
+Convert the function to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible. Do not change the function name.
+
+Follow the following format for your output: Place the function translation between the tags <FUNC> and </FUNC>. 
+
+
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:59 ~ oxidate_out[187d]::url_get_path)
+Chunk root
+Here is a function:
+```rust
+pub unsafe extern "C" fn url_get_path(
+    mut url: *const libc::c_char,
+) -> *mut libc::c_char {
+    let mut data = url_parse(url);
+    let mut out = if !data.is_null() && !((*data).path).is_null() {
+        strdup((*data).path)
+    } else {
+        0 as *mut libc::c_char
+    };
+    url_free(data);
+    return out;
+}
+```
+
+
+The file contains the following imports:
+```rust
+use std::boxed::Box;
+```
+```rust
+use std::ptr;
+```
+```rust
+use ::libc;
+```
+```rust
+CString
+```
+```rust
+use std::char;
+```
+```rust
+CStr
+```
+```rust
+use std::ffi::{CString, CStr};
+```
+```rust
+use crate::url_data_t as UrlData;
+```
+Convert the function to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible. Do not change the function name.
+
+Follow the following format for your output: Place the function translation between the tags <FUNC> and </FUNC>. 
+
+
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:57 ~ oxidate_out[187d]::url_get_host)
+Chunk root
+Here is a function:
+```rust
+pub unsafe extern "C" fn url_get_host(
+    mut url: *const libc::c_char,
+) -> *mut libc::c_char {
+    let mut data = url_parse(url);
+    let mut out = if !data.is_null() && !((*data).host).is_null() {
+        strdup((*data).host)
+    } else {
+        0 as *mut libc::c_char
+    };
+    url_free(data);
+    return out;
+}
+```
+
+
+The file contains the following imports:
+```rust
+use std::ffi::{CString, CStr};
+```
+```rust
+use std::ptr;
+```
+```rust
+use crate::url_data_t as UrlData;
+```
+```rust
+use std::char;
+```
+```rust
+CString
+```
+```rust
+CStr
+```
+```rust
+use ::libc;
+```
+```rust
+use std::boxed::Box;
+```
+Convert the function to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible. Do not change the function name.
+
+Follow the following format for your output: Place the function translation between the tags <FUNC> and </FUNC>. 
+
+
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:62 ~ oxidate_out[187d]::url_get_port)
+Chunk root
+Here is a function:
+```rust
+pub unsafe extern "C" fn url_get_port(
+    mut url: *const libc::c_char,
+) -> *mut libc::c_char {
+    let mut data = url_parse(url);
+    let mut out = if !data.is_null() && !((*data).port).is_null() {
+        strdup((*data).port)
+    } else {
+        0 as *mut libc::c_char
+    };
+    url_free(data);
+    return out;
+}
+```
+
+
+The file contains the following imports:
+```rust
+CStr
+```
+```rust
+use std::char;
+```
+```rust
+use crate::url_data_t as UrlData;
+```
+```rust
+use std::boxed::Box;
+```
+```rust
+use std::ffi::{CString, CStr};
+```
+```rust
+CString
+```
+```rust
+use ::libc;
+```
+```rust
+use std::ptr;
+```
+Convert the function to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible. Do not change the function name.
+
+Follow the following format for your output: Place the function translation between the tags <FUNC> and </FUNC>. 
+
+
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:58 ~ oxidate_out[187d]::url_get_pathname)
+Chunk root
+Here is a function:
+```rust
+pub unsafe extern "C" fn url_get_pathname(
+    mut url: *const libc::c_char,
+) -> *mut libc::c_char {
+    let mut data = url_parse(url);
+    let mut out = if !data.is_null() && !((*data).path).is_null() {
+        strdup((*data).path)
+    } else {
+        0 as *mut libc::c_char
+    };
+    url_free(data);
+    return out;
+}
+```
+
+
+The file contains the following imports:
+```rust
+use std::char;
+```
+```rust
+use crate::url_data_t as UrlData;
+```
+```rust
+use std::ffi::{CString, CStr};
+```
+```rust
+CString
+```
+```rust
+use std::boxed::Box;
+```
+```rust
+use std::ptr;
+```
+```rust
+use ::libc;
+```
+```rust
+CStr
+```
+Convert the function to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible. Do not change the function name.
+
+Follow the following format for your output: Place the function translation between the tags <FUNC> and </FUNC>. 
+
+
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:55 ~ oxidate_out[187d]::url_get_userinfo)
+Chunk root
+Here is a function:
+```rust
+pub unsafe extern "C" fn url_get_userinfo(
+    mut url: *const libc::c_char,
+) -> *mut libc::c_char {
+    let mut data = url_parse(url);
+    let mut out = if !data.is_null() && !((*data).userinfo).is_null() {
+        strdup((*data).userinfo)
+    } else {
+        0 as *mut libc::c_char
+    };
+    url_free(data);
+    return out;
+}
+```
+
+
+The file contains the following imports:
+```rust
+use std::boxed::Box;
+```
+```rust
+CStr
+```
+```rust
+use ::libc;
+```
+```rust
+CString
+```
+```rust
+use std::ptr;
+```
+```rust
+use std::ffi::{CString, CStr};
+```
+```rust
+use std::char;
+```
+```rust
+use crate::url_data_t as UrlData;
+```
+Convert the function to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible. Do not change the function name.
+
+Follow the following format for your output: Place the function translation between the tags <FUNC> and </FUNC>. 
+
+
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:56 ~ oxidate_out[187d]::url_get_hostname)
+Chunk root
+Here is a function:
+```rust
+pub unsafe extern "C" fn url_get_hostname(
+    mut url: *const libc::c_char,
+) -> *mut libc::c_char {
+    let mut data = url_parse(url);
+    let mut out = if !data.is_null() && !((*data).host).is_null() {
+        strdup((*data).host)
+    } else {
+        0 as *mut libc::c_char
+    };
+    url_free(data);
+    return out;
+}
+```
+
+
+The file contains the following imports:
+```rust
+use crate::url_data_t as UrlData;
+```
+```rust
+use std::ffi::{CString, CStr};
+```
+```rust
+CStr
+```
+```rust
+use std::boxed::Box;
+```
+```rust
+use std::char;
+```
+```rust
+use std::ptr;
+```
+```rust
+CString
+```
+```rust
+use ::libc;
+```
+Convert the function to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible. Do not change the function name.
+
+Follow the following format for your output: Place the function translation between the tags <FUNC> and </FUNC>. 
+
+
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:66 ~ oxidate_out[187d]::main)
+Chunk root
+Here is a function:
+```rust
+pub fn main() {}
+```
+
+
+The file contains the following imports:
+```rust
+use ::libc;
+```
+```rust
+use std::ffi::{CString, CStr};
+```
+```rust
+CStr
+```
+```rust
+use std::boxed::Box;
+```
+```rust
+use crate::url_data_t as UrlData;
+```
+```rust
+use std::ptr;
+```
+```rust
+CString
+```
+```rust
+use std::char;
+```
+Convert the function to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible. Do not change the function name.
+
+Follow the following format for your output: Place the function translation between the tags <FUNC> and </FUNC>. 
+
+
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:51 ~ oxidate_out[187d]::url_is_protocol)
+Chunk root
+Here is a function:
+```rust
+pub unsafe extern "C" fn url_is_protocol(mut str: *const libc::c_char) -> bool {
+    let count = (::core::mem::size_of::<[*const libc::c_char; 177]>() as libc::c_ulong)
+        .wrapping_div(::core::mem::size_of::<*const libc::c_char>() as libc::c_ulong)
+        as libc::c_uint;
+    let mut i = 0 as libc::c_int as libc::c_uint;
+    while i < count {
+        if 0 as libc::c_int == strcmp(URL_SCHEMES[i as usize], str) {
+            return 1 as libc::c_int != 0;
+        }
+        i = i.wrapping_add(1);
+        i;
+    }
+    return 0 as libc::c_int != 0;
+}
+```
+
+
+The file contains the following imports:
+```rust
+CStr
+```
+```rust
+use std::ptr;
+```
+```rust
+use ::libc;
+```
+```rust
+use std::char;
+```
+```rust
+use crate::url_data_t as UrlData;
+```
+```rust
+use std::boxed::Box;
+```
+```rust
+CString
+```
+```rust
+use std::ffi::{CString, CStr};
+```
+Convert the function to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible. Do not change the function name.
+
+Follow the following format for your output: Place the function translation between the tags <FUNC> and </FUNC>. 
+
+
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:45 ~ oxidate_out[187d]::unhex)
+Chunk root
+Here is a function:
+```rust
+unsafe extern "C" fn unhex(mut s: *const libc::c_char) -> libc::c_int {
+    if *s as libc::c_int >= '0' as i32 && *s as libc::c_int <= '9' as i32 {
+        return *s as libc::c_int - '0' as i32;
+    }
+    if *s as libc::c_int >= 'A' as i32 && *s as libc::c_int <= 'F' as i32 {
+        return *s as libc::c_int - 'A' as i32 + 10 as libc::c_int;
+    }
+    if *s as libc::c_int >= 'a' as i32 && *s as libc::c_int <= 'f' as i32 {
+        return *s as libc::c_int - 'a' as i32 + 10 as libc::c_int;
+    }
+    return -(1 as libc::c_int);
+}
+```
+
+
+The file contains the following imports:
+```rust
+use std::char;
+```
+```rust
+use crate::url_data_t as UrlData;
+```
+```rust
+use ::libc;
+```
+```rust
+CString
+```
+```rust
+use std::ffi::{CString, CStr};
+```
+```rust
+use std::boxed::Box;
+```
+```rust
+CStr
+```
+```rust
+use std::ptr;
+```
+Convert the function to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible. Do not change the function name.
+
+Follow the following format for your output: Place the function translation between the tags <FUNC> and </FUNC>. 
+
+
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:60 ~ oxidate_out[187d]::url_get_query_value)
+Chunk root
+Here is a function:
+```rust
+pub unsafe extern "C" fn url_get_query_value(
+    mut url: *const url_data_t,
+    mut key: *const libc::c_char,
+) -> *const libc::c_char {
+    if ((*url).query).is_null() {
+        return 0 as *const libc::c_char;
+    }
+    let mut kv = (*url).query;
+    while !((*kv).key).is_null() {
+        if strcmp((*kv).key, key) == 0 as libc::c_int {
+            return (*kv).value;
+        }
+        kv = kv.offset(1);
+        kv;
+    }
+    return 0 as *const libc::c_char;
+}
+```
+
+
+The file contains the following imports:
+```rust
+use std::char;
+```
+```rust
+use ::libc;
+```
+```rust
+CStr
+```
+```rust
+use std::ffi::{CString, CStr};
+```
+```rust
+use std::boxed::Box;
+```
+```rust
+use std::ptr;
+```
+```rust
+use crate::url_data_t as UrlData;
+```
+```rust
+CString
+```
+Convert the function to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible. Do not change the function name.
+
+Follow the following format for your output: Place the function translation between the tags <FUNC> and </FUNC>. 
+
+
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------

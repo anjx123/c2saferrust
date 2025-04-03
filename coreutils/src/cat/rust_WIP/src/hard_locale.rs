@@ -14,19 +14,12 @@ pub type size_t = libc::c_ulong;
 pub fn hard_locale(category: libc::c_int) -> bool {
     let mut locale: [libc::c_char; 257] = [0; 257];
     unsafe {
-        if setlocale_null_r(
-            category,
-            locale.as_mut_ptr(),
-            ::core::mem::size_of::<[libc::c_char; 257]>() as libc::c_ulong,
-        ) != 0
-        {
+        if setlocale_null_r(category, locale.as_mut_ptr(), locale.len() as libc::c_ulong) != 0 {
             return false;
         }
     }
-    let locale_str = unsafe { CStr::from_ptr(locale.as_ptr()).to_string_lossy() };
-    if locale_str == "C" || locale_str == "POSIX" {
-        return false;
-    }
-    return true;
+    let c_str = unsafe { std::ffi::CStr::from_ptr(locale.as_ptr()) };
+    let locale_str = c_str.to_string_lossy();
+    locale_str != "C" && locale_str != "POSIX"
 }
 

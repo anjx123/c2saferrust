@@ -1,0 +1,313 @@
+[
+  {
+    "func_defid": "DefId(0:47 ~ oxidate_out[187d]::shoco_compress)",
+    "span": "src/main.rs:3055:1: 3153:2 (#0)",
+    "pieces": [
+      "src/main.rs:3055:1: 3153:2 (#0)"
+    ],
+    "sub_chunks": [],
+    "num_lines": 105,
+    "source": "pub unsafe extern \"C\" fn shoco_compress(\n    original: *const libc::c_char,\n    mut strlen: size_t,\n    out: *mut libc::c_char,\n    mut bufsize: size_t,\n) -> size_t {\n    let mut o = out;\n    let out_end = out.offset(bufsize as isize);\n    let mut in_0 = original;\n    let mut indices: [int16_t; 8] = [0 as libc::c_int as int16_t, 0, 0, 0, 0, 0, 0, 0];\n    let mut last_chr_index: libc::c_int = 0;\n    let mut current_index: libc::c_int = 0;\n    let mut successor_index: libc::c_int = 0;\n    let mut n_consecutive: libc::c_uint = 0;\n    let mut code = Code { word: 0 };\n    let mut pack_n: libc::c_int = 0;\n    let mut rest: libc::c_uint = 0;\n    let in_end = original.offset(strlen as isize);\n    while *in_0 as libc::c_int != '\\0' as i32 {\n        if strlen != 0 && in_0 == in_end {\n            break;\n        }\n        indices[0 as libc::c_int\n            as usize] = chr_ids_by_chr[*in_0.offset(0 as libc::c_int as isize)\n            as libc::c_uchar as usize] as int16_t;\n        last_chr_index = indices[0 as libc::c_int as usize] as libc::c_int;\n        if !(last_chr_index < 0 as libc::c_int) {\n            rest = in_end.offset_from(in_0) as libc::c_long as libc::c_uint;\n            n_consecutive = 1 as libc::c_int as libc::c_uint;\n            while n_consecutive <= 7 as libc::c_int as libc::c_uint {\n                if strlen != 0 && n_consecutive == rest {\n                    break;\n                }\n                current_index = chr_ids_by_chr[*in_0.offset(n_consecutive as isize)\n                    as libc::c_uchar as usize] as libc::c_int;\n                if current_index < 0 as libc::c_int {\n                    break;\n                }\n                successor_index = successor_ids_by_chr_id_and_chr_id[last_chr_index\n                    as usize][current_index as usize] as libc::c_int;\n                if successor_index < 0 as libc::c_int {\n                    break;\n                }\n                indices[n_consecutive as usize] = successor_index as int16_t;\n                last_chr_index = current_index;\n                n_consecutive = n_consecutive.wrapping_add(1);\n                n_consecutive;\n            }\n            if !(n_consecutive < 2 as libc::c_int as libc::c_uint) {\n                pack_n = find_best_encoding(indices.as_mut_ptr(), n_consecutive);\n                if pack_n >= 0 as libc::c_int {\n                    if o.offset(packs[pack_n as usize].bytes_packed as isize) > out_end {\n                        return bufsize.wrapping_add(1 as libc::c_int as libc::c_ulong);\n                    }\n                    code.word = packs[pack_n as usize].word;\n                    let mut i = 0 as libc::c_int as libc::c_uint;\n                    while i < packs[pack_n as usize].bytes_unpacked {\n                        code.word\n                            |= ((indices[i as usize] as libc::c_int)\n                                << packs[pack_n as usize].offsets[i as usize])\n                                as libc::c_uint;\n                        i = i.wrapping_add(1);\n                        i;\n                    }\n                    code\n                        .word = (code.word << 24 as libc::c_int)\n                        .wrapping_add(\n                            (code.word & 0xff00 as libc::c_int as libc::c_uint)\n                                << 8 as libc::c_int,\n                        )\n                        .wrapping_add(\n                            (code.word & 0xff0000 as libc::c_int as libc::c_uint)\n                                >> 8 as libc::c_int,\n                        )\n                        .wrapping_add(code.word >> 24 as libc::c_int);\n                    let mut i_0 = 0 as libc::c_int as libc::c_uint;\n                    while i_0 < packs[pack_n as usize].bytes_packed {\n                        *o.offset(i_0 as isize) = code.bytes[i_0 as usize];\n                        i_0 = i_0.wrapping_add(1);\n                        i_0;\n                    }\n                    o = o.offset(packs[pack_n as usize].bytes_packed as isize);\n                    in_0 = in_0.offset(packs[pack_n as usize].bytes_unpacked as isize);\n                    continue;\n                }\n            }\n        }\n        if *in_0 as libc::c_int & 0x80 as libc::c_int != 0 {\n            if o.offset(2 as libc::c_int as isize) > out_end {\n                return bufsize.wrapping_add(1 as libc::c_int as libc::c_ulong);\n            }\n            let fresh0 = o;\n            o = o.offset(1);\n            *fresh0 = 0 as libc::c_int as libc::c_char;\n        } else if o.offset(1 as libc::c_int as isize) > out_end {\n            return bufsize.wrapping_add(1 as libc::c_int as libc::c_ulong)\n        }\n        let fresh1 = in_0;\n        in_0 = in_0.offset(1);\n        let fresh2 = o;\n        o = o.offset(1);\n        *fresh2 = *fresh1;\n    }\n    return o.offset_from(out) as libc::c_long as size_t;\n}",
+    "calls": [],
+    "globals": [],
+    "imports": [
+      {
+        "span": "src/main.rs:14:62: 14:79 (#0)",
+        "source": "_mm_setzero_si128"
+      },
+      {
+        "span": "src/main.rs:14:46: 14:60 (#0)",
+        "source": "_mm_load_si128"
+      },
+      {
+        "span": "src/main.rs:13:1: 16:3 (#0)",
+        "source": "pub use core::arch::x86_64::{\n    __m128i, _mm_and_si128, _mm_cmpgt_epi16, _mm_load_si128, _mm_setzero_si128,\n    _mm_movemask_epi8,\n};"
+      },
+      {
+        "span": "src/main.rs:4:1: 4:27 (#0)",
+        "source": "use std::convert::TryInto;"
+      },
+      {
+        "span": "src/main.rs:14:29: 14:44 (#0)",
+        "source": "_mm_cmpgt_epi16"
+      },
+      {
+        "span": "src/main.rs:14:5: 14:12 (#0)",
+        "source": "__m128i"
+      },
+      {
+        "span": "src/main.rs:14:14: 14:27 (#0)",
+        "source": "_mm_and_si128"
+      },
+      {
+        "span": "src/main.rs:6:1: 6:12 (#0)",
+        "source": "use ::libc;"
+      },
+      {
+        "span": "src/main.rs:15:5: 15:22 (#0)",
+        "source": "_mm_movemask_epi8"
+      }
+    ],
+    "chunks": []
+  },
+  {
+    "func_defid": "DefId(0:49 ~ oxidate_out[187d]::shoco_decompress)",
+    "span": "src/main.rs:3156:1: 3219:2 (#0)",
+    "pieces": [
+      "src/main.rs:3156:1: 3219:2 (#0)"
+    ],
+    "sub_chunks": [],
+    "num_lines": 86,
+    "source": "pub unsafe extern \"C\" fn shoco_decompress(\n    original: *const libc::c_char,\n    mut complen: size_t,\n    out: *mut libc::c_char,\n    mut bufsize: size_t,\n) -> size_t {\n    let mut o = out;\n    let out_end = out.offset(bufsize as isize);\n    let mut in_0 = original;\n    let mut last_chr: libc::c_char = 0;\n    let mut code = Code {\n        word: 0 as libc::c_int as uint32_t,\n    };\n    let mut offset: libc::c_int = 0;\n    let mut mask: libc::c_int = 0;\n    let mut mark: libc::c_int = 0;\n    let in_end = original.offset(complen as isize);\n    while in_0 < in_end {\n        mark = decode_header(*in_0 as libc::c_uchar);\n        if mark < 0 as libc::c_int {\n            if o >= out_end {\n                return bufsize.wrapping_add(1 as libc::c_int as libc::c_ulong);\n            }\n            if *in_0 as libc::c_int == 0 as libc::c_int {\n                in_0 = in_0.offset(1);\n                if in_0 >= in_end {\n                    return 18446744073709551615 as libc::c_ulong;\n                }\n            }\n            let fresh3 = in_0;\n            in_0 = in_0.offset(1);\n            let fresh4 = o;\n            o = o.offset(1);\n            *fresh4 = *fresh3;\n        } else {\n            if o.offset(packs[mark as usize].bytes_unpacked as isize) > out_end {\n                return bufsize.wrapping_add(1 as libc::c_int as libc::c_ulong)\n            } else if in_0.offset(packs[mark as usize].bytes_packed as isize) > in_end {\n                return 18446744073709551615 as libc::c_ulong\n            }\n            let mut i = 0 as libc::c_int as libc::c_uint;\n            while i < packs[mark as usize].bytes_packed {\n                code.bytes[i as usize] = *in_0.offset(i as isize);\n                i = i.wrapping_add(1);\n                i;\n            }\n            code\n                .word = (code.word << 24 as libc::c_int)\n                .wrapping_add(\n                    (code.word & 0xff00 as libc::c_int as libc::c_uint)\n                        << 8 as libc::c_int,\n                )\n                .wrapping_add(\n                    (code.word & 0xff0000 as libc::c_int as libc::c_uint)\n                        >> 8 as libc::c_int,\n                )\n                .wrapping_add(code.word >> 24 as libc::c_int);\n            offset = packs[mark as usize].offsets[0 as libc::c_int as usize]\n                as libc::c_int;\n            mask = packs[mark as usize].masks[0 as libc::c_int as usize] as libc::c_int;\n            let ref mut fresh5 = *o.offset(0 as libc::c_int as isize);\n            *fresh5 = chrs_by_chr_id[(code.word >> offset & mask as libc::c_uint)\n                as usize];\n            last_chr = *fresh5;\n            let mut i_0 = 1 as libc::c_int as libc::c_uint;\n            while i_0 < packs[mark as usize].bytes_unpacked {\n                offset = packs[mark as usize].offsets[i_0 as usize] as libc::c_int;\n                mask = packs[mark as usize].masks[i_0 as usize] as libc::c_int;\n                let ref mut fresh6 = *o.offset(i_0 as isize);\n                *fresh6 = chrs_by_chr_and_successor_id[(last_chr as libc::c_uchar\n                    as libc::c_int - 39 as libc::c_int)\n                    as usize][(code.word >> offset & mask as libc::c_uint) as usize]\n                    as libc::c_char;\n                last_chr = *fresh6;\n                i_0 = i_0.wrapping_add(1);\n                i_0;\n            }\n            o = o.offset(packs[mark as usize].bytes_unpacked as isize);\n            in_0 = in_0.offset(packs[mark as usize].bytes_packed as isize);\n        }\n    }\n    if o < out_end {\n        *o = '\\0' as i32 as libc::c_char;\n    }\n    return o.offset_from(out) as libc::c_long as size_t;\n}",
+    "calls": [],
+    "globals": [],
+    "imports": [
+      {
+        "span": "src/main.rs:14:14: 14:27 (#0)",
+        "source": "_mm_and_si128"
+      },
+      {
+        "span": "src/main.rs:14:5: 14:12 (#0)",
+        "source": "__m128i"
+      },
+      {
+        "span": "src/main.rs:6:1: 6:12 (#0)",
+        "source": "use ::libc;"
+      },
+      {
+        "span": "src/main.rs:13:1: 16:3 (#0)",
+        "source": "pub use core::arch::x86_64::{\n    __m128i, _mm_and_si128, _mm_cmpgt_epi16, _mm_load_si128, _mm_setzero_si128,\n    _mm_movemask_epi8,\n};"
+      },
+      {
+        "span": "src/main.rs:15:5: 15:22 (#0)",
+        "source": "_mm_movemask_epi8"
+      },
+      {
+        "span": "src/main.rs:14:29: 14:44 (#0)",
+        "source": "_mm_cmpgt_epi16"
+      },
+      {
+        "span": "src/main.rs:14:46: 14:60 (#0)",
+        "source": "_mm_load_si128"
+      },
+      {
+        "span": "src/main.rs:4:1: 4:27 (#0)",
+        "source": "use std::convert::TryInto;"
+      },
+      {
+        "span": "src/main.rs:14:62: 14:79 (#0)",
+        "source": "_mm_setzero_si128"
+      }
+    ],
+    "chunks": []
+  },
+  {
+    "func_defid": "DefId(0:46 ~ oxidate_out[187d]::find_best_encoding)",
+    "span": "src/main.rs:3038:1: 3053:2 (#0)",
+    "pieces": [
+      "src/main.rs:3038:1: 3053:2 (#0)"
+    ],
+    "sub_chunks": [],
+    "num_lines": 16,
+    "source": "unsafe extern \"C\" fn find_best_encoding(\n    mut indices: *const int16_t,\n    mut n_consecutive: libc::c_uint,\n) -> libc::c_int {\n    let mut p = 3 as libc::c_int - 1 as libc::c_int;\n    while p >= 0 as libc::c_int {\n        if n_consecutive >= packs[p as usize].bytes_unpacked\n            && check_indices(indices, p) != 0\n        {\n            return p;\n        }\n        p -= 1;\n        p;\n    }\n    return -(1 as libc::c_int);\n}",
+    "calls": [],
+    "globals": [],
+    "imports": [
+      {
+        "span": "src/main.rs:6:1: 6:12 (#0)",
+        "source": "use ::libc;"
+      },
+      {
+        "span": "src/main.rs:4:1: 4:27 (#0)",
+        "source": "use std::convert::TryInto;"
+      },
+      {
+        "span": "src/main.rs:14:46: 14:60 (#0)",
+        "source": "_mm_load_si128"
+      },
+      {
+        "span": "src/main.rs:13:1: 16:3 (#0)",
+        "source": "pub use core::arch::x86_64::{\n    __m128i, _mm_and_si128, _mm_cmpgt_epi16, _mm_load_si128, _mm_setzero_si128,\n    _mm_movemask_epi8,\n};"
+      },
+      {
+        "span": "src/main.rs:14:62: 14:79 (#0)",
+        "source": "_mm_setzero_si128"
+      },
+      {
+        "span": "src/main.rs:14:14: 14:27 (#0)",
+        "source": "_mm_and_si128"
+      },
+      {
+        "span": "src/main.rs:14:29: 14:44 (#0)",
+        "source": "_mm_cmpgt_epi16"
+      },
+      {
+        "span": "src/main.rs:15:5: 15:22 (#0)",
+        "source": "_mm_movemask_epi8"
+      },
+      {
+        "span": "src/main.rs:14:5: 14:12 (#0)",
+        "source": "__m128i"
+      }
+    ],
+    "chunks": []
+  },
+  {
+    "func_defid": "DefId(0:45 ~ oxidate_out[187d]::check_indices)",
+    "span": "src/main.rs:3022:1: 3036:2 (#0)",
+    "pieces": [
+      "src/main.rs:3022:1: 3036:2 (#0)"
+    ],
+    "sub_chunks": [],
+    "num_lines": 15,
+    "source": "unsafe extern \"C\" fn check_indices(\n    mut indices: *const int16_t,\n    mut pack_n: libc::c_int,\n) -> libc::c_int {\n    let mut zero = _mm_setzero_si128();\n    let mut indis = _mm_load_si128(indices as *mut __m128i);\n    let mut masks = _mm_load_si128(\n        (packs[pack_n as usize].masks).as_ptr() as *mut __m128i,\n    );\n    let mut cmp = _mm_cmpgt_epi16(indis, masks);\n    let mut mmask = _mm_cmpgt_epi16(masks, zero);\n    cmp = _mm_and_si128(cmp, mmask);\n    let mut result = _mm_movemask_epi8(cmp);\n    return (result == 0 as libc::c_int) as libc::c_int;\n}",
+    "calls": [],
+    "globals": [
+      {
+        "span": "src/main.rs:2919:1: 3010:3 (#0)",
+        "source": "static mut packs: [Pack; 3] = [\n    {\n        let mut init = Pack {\n            word: 0x80000000 as libc::c_uint,\n            bytes_packed: 1.0f64 as libc::c_uint,\n            bytes_unpacked: 2 as libc::c_int as libc::c_uint,\n            offsets: [\n                26 as libc::c_int as libc::c_uint,\n                24 as libc::c_int as libc::c_uint,\n                24 as libc::c_int as libc::c_uint,\n                24 as libc::c_int as libc::c_uint,\n                24 as libc::c_int as libc::c_uint,\n                24 as libc::c_int as libc::c_uint,\n                24 as libc::c_int as libc::c_uint,\n                24 as libc::c_int as libc::c_uint,\n            ],\n            masks: [\n                15 as libc::c_int as int16_t,\n                3 as libc::c_int as int16_t,\n                0 as libc::c_int as int16_t,\n                0 as libc::c_int as int16_t,\n                0 as libc::c_int as int16_t,\n                0 as libc::c_int as int16_t,\n                0 as libc::c_int as int16_t,\n                0 as libc::c_int as int16_t,\n            ],\n            header_mask: 0xc0 as libc::c_int as libc::c_char,\n            header: 0x80 as libc::c_int as libc::c_char,\n        };\n        init\n    },\n    {\n        let mut init = Pack {\n            word: 0xc0000000 as libc::c_uint,\n            bytes_packed: 2.0f64 as libc::c_uint,\n            bytes_unpacked: 4 as libc::c_int as libc::c_uint,\n            offsets: [\n                25 as libc::c_int as libc::c_uint,\n                22 as libc::c_int as libc::c_uint,\n                19 as libc::c_int as libc::c_uint,\n                16 as libc::c_int as libc::c_uint,\n                16 as libc::c_int as libc::c_uint,\n                16 as libc::c_int as libc::c_uint,\n                16 as libc::c_int as libc::c_uint,\n                16 as libc::c_int as libc::c_uint,\n            ],\n            masks: [\n                15 as libc::c_int as int16_t,\n                7 as libc::c_int as int16_t,\n                7 as libc::c_int as int16_t,\n                7 as libc::c_int as int16_t,\n                0 as libc::c_int as int16_t,\n                0 as libc::c_int as int16_t,\n                0 as libc::c_int as int16_t,\n                0 as libc::c_int as int16_t,\n            ],\n            header_mask: 0xe0 as libc::c_int as libc::c_char,\n            header: 0xc0 as libc::c_int as libc::c_char,\n        };\n        init\n    },\n    {\n        let mut init = Pack {\n            word: 0xe0000000 as libc::c_uint,\n            bytes_packed: 4.0f64 as libc::c_uint,\n            bytes_unpacked: 8 as libc::c_int as libc::c_uint,\n            offsets: [\n                23 as libc::c_int as libc::c_uint,\n                19 as libc::c_int as libc::c_uint,\n                15 as libc::c_int as libc::c_uint,\n                11 as libc::c_int as libc::c_uint,\n                8 as libc::c_int as libc::c_uint,\n                5 as libc::c_int as libc::c_uint,\n                2 as libc::c_int as libc::c_uint,\n                0 as libc::c_int as libc::c_uint,\n            ],\n            masks: [\n                31 as libc::c_int as int16_t,\n                15 as libc::c_int as int16_t,\n                15 as libc::c_int as int16_t,\n                15 as libc::c_int as int16_t,\n                7 as libc::c_int as int16_t,\n                7 as libc::c_int as int16_t,\n                7 as libc::c_int as int16_t,\n                3 as libc::c_int as int16_t,\n            ],\n            header_mask: 0xf0 as libc::c_int as libc::c_char,\n            header: 0xe0 as libc::c_int as libc::c_char,\n        };\n        init\n    },\n];"
+      }
+    ],
+    "imports": [
+      {
+        "span": "src/main.rs:6:1: 6:12 (#0)",
+        "source": "use ::libc;"
+      },
+      {
+        "span": "src/main.rs:4:1: 4:27 (#0)",
+        "source": "use std::convert::TryInto;"
+      },
+      {
+        "span": "src/main.rs:14:14: 14:27 (#0)",
+        "source": "_mm_and_si128"
+      },
+      {
+        "span": "src/main.rs:14:5: 14:12 (#0)",
+        "source": "__m128i"
+      },
+      {
+        "span": "src/main.rs:14:62: 14:79 (#0)",
+        "source": "_mm_setzero_si128"
+      },
+      {
+        "span": "src/main.rs:15:5: 15:22 (#0)",
+        "source": "_mm_movemask_epi8"
+      },
+      {
+        "span": "src/main.rs:14:29: 14:44 (#0)",
+        "source": "_mm_cmpgt_epi16"
+      },
+      {
+        "span": "src/main.rs:14:46: 14:60 (#0)",
+        "source": "_mm_load_si128"
+      },
+      {
+        "span": "src/main.rs:13:1: 16:3 (#0)",
+        "source": "pub use core::arch::x86_64::{\n    __m128i, _mm_and_si128, _mm_cmpgt_epi16, _mm_load_si128, _mm_setzero_si128,\n    _mm_movemask_epi8,\n};"
+      }
+    ],
+    "chunks": []
+  },
+  {
+    "func_defid": "DefId(0:44 ~ oxidate_out[187d]::decode_header)",
+    "span": "src/main.rs:3012:1: 3019:2 (#0)",
+    "pieces": [
+      "src/main.rs:3012:1: 3019:2 (#0)"
+    ],
+    "sub_chunks": [],
+    "num_lines": 9,
+    "source": "unsafe extern \"C\" fn decode_header(mut val: libc::c_uchar) -> libc::c_int {\n    let mut i = -(1 as libc::c_int);\n    while (val as libc::c_schar as libc::c_int) < 0 as libc::c_int {\n        val = ((val as libc::c_int) << 1 as libc::c_int) as libc::c_uchar;\n        i += 1;\n        i;\n    }\n    return i;\n}",
+    "calls": [],
+    "globals": [],
+    "imports": [
+      {
+        "span": "src/main.rs:14:62: 14:79 (#0)",
+        "source": "_mm_setzero_si128"
+      },
+      {
+        "span": "src/main.rs:14:14: 14:27 (#0)",
+        "source": "_mm_and_si128"
+      },
+      {
+        "span": "src/main.rs:6:1: 6:12 (#0)",
+        "source": "use ::libc;"
+      },
+      {
+        "span": "src/main.rs:15:5: 15:22 (#0)",
+        "source": "_mm_movemask_epi8"
+      },
+      {
+        "span": "src/main.rs:13:1: 16:3 (#0)",
+        "source": "pub use core::arch::x86_64::{\n    __m128i, _mm_and_si128, _mm_cmpgt_epi16, _mm_load_si128, _mm_setzero_si128,\n    _mm_movemask_epi8,\n};"
+      },
+      {
+        "span": "src/main.rs:14:5: 14:12 (#0)",
+        "source": "__m128i"
+      },
+      {
+        "span": "src/main.rs:14:46: 14:60 (#0)",
+        "source": "_mm_load_si128"
+      },
+      {
+        "span": "src/main.rs:4:1: 4:27 (#0)",
+        "source": "use std::convert::TryInto;"
+      },
+      {
+        "span": "src/main.rs:14:29: 14:44 (#0)",
+        "source": "_mm_cmpgt_epi16"
+      }
+    ],
+    "chunks": []
+  },
+  {
+    "func_defid": "DefId(0:50 ~ oxidate_out[187d]::main)",
+    "span": "src/main.rs:3222:1: 3224:2 (#0)",
+    "pieces": [
+      "src/main.rs:3222:1: 3224:2 (#0)"
+    ],
+    "sub_chunks": [],
+    "num_lines": 1,
+    "source": "pub fn main() {}",
+    "calls": [],
+    "globals": [],
+    "imports": [
+      {
+        "span": "src/main.rs:13:1: 16:3 (#0)",
+        "source": "pub use core::arch::x86_64::{\n    __m128i, _mm_and_si128, _mm_cmpgt_epi16, _mm_load_si128, _mm_setzero_si128,\n    _mm_movemask_epi8,\n};"
+      },
+      {
+        "span": "src/main.rs:14:5: 14:12 (#0)",
+        "source": "__m128i"
+      },
+      {
+        "span": "src/main.rs:15:5: 15:22 (#0)",
+        "source": "_mm_movemask_epi8"
+      },
+      {
+        "span": "src/main.rs:14:29: 14:44 (#0)",
+        "source": "_mm_cmpgt_epi16"
+      },
+      {
+        "span": "src/main.rs:14:62: 14:79 (#0)",
+        "source": "_mm_setzero_si128"
+      },
+      {
+        "span": "src/main.rs:14:14: 14:27 (#0)",
+        "source": "_mm_and_si128"
+      },
+      {
+        "span": "src/main.rs:4:1: 4:27 (#0)",
+        "source": "use std::convert::TryInto;"
+      },
+      {
+        "span": "src/main.rs:6:1: 6:12 (#0)",
+        "source": "use ::libc;"
+      },
+      {
+        "span": "src/main.rs:14:46: 14:60 (#0)",
+        "source": "_mm_load_si128"
+      }
+    ],
+    "chunks": []
+  }
+]

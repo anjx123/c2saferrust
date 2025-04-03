@@ -1,4 +1,4 @@
-use std::println;
+use std::ffi;
 
 use ::libc;
 extern "C" {
@@ -308,17 +308,18 @@ pub unsafe extern "C" fn version_etc(
 pub fn emit_bug_reporting_address() {
     println!();
     println!(
-        "Report bugs to: {}",
-        "bug-coreutils@gnu.org"
+        "{}",
+        unsafe { std::ffi::CStr::from_ptr(gettext(b"Report bugs to: \0".as_ptr() as *const _)).to_string_lossy() }
+            .replace("%s", "bug-coreutils@gnu.org")
     );
     println!(
         "{} home page: <{}>",
-        "GNU coreutils",
-        "https://www.gnu.org/software/coreutils/"
+        unsafe { std::ffi::CStr::from_ptr(gettext(b"GNU coreutils\0".as_ptr() as *const _)).to_string_lossy() },
+        unsafe { std::ffi::CStr::from_ptr(b"https://www.gnu.org/software/coreutils/\0".as_ptr() as *const _).to_string_lossy() }
     );
     println!(
         "General help using GNU software: <{}>",
-        "https://www.gnu.org/gethelp/"
+        unsafe { std::ffi::CStr::from_ptr(b"https://www.gnu.org/gethelp/\0".as_ptr() as *const _).to_string_lossy() }
     );
 }
 

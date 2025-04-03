@@ -1,10 +1,11 @@
-
-
-use std::alloc::{self, Layout};
-
 use std::option::Option;
 
 use std::vec::Vec;
+
+use std::vec;
+
+use std::alloc;
+use std::ptr;
 
 use ::libc;
 extern "C" {
@@ -25,10 +26,10 @@ pub type idx_t = ptrdiff_t;
 #[inline]
 #[linkage = "external"]
 pub fn ireallocarray(
-    p: Option<Vec<u8>>,
+    p: &mut Vec<u8>,
     n: idx_t,
     s: idx_t,
-) -> Option<Vec<u8>> {
+) -> *mut libc::c_void {
     if n as usize <= usize::MAX && s as usize <= usize::MAX {
         let mut nx: usize = n as usize;
         let mut sx: usize = s as usize;
@@ -36,11 +37,10 @@ pub fn ireallocarray(
             sx = 1;
             nx = sx;
         }
-        let mut vec = p.unwrap_or_else(|| Vec::with_capacity(nx * sx));
-        vec.resize(nx * sx, 0);
-        return Some(vec);
+        p.resize(nx * sx, 0);
+        p.as_mut_ptr() as *mut libc::c_void
     } else {
-        return None; // Assuming _gl_alloc_nomem() returns None or similar
+        unsafe { _gl_alloc_nomem() }
     }
 }
 
@@ -48,44 +48,42 @@ pub fn ireallocarray(
 #[inline]
 #[linkage = "external"]
 pub fn icalloc(n: usize, s: usize) -> Option<Vec<u8>> {
-    if n > usize::MAX {
-        if s != 0 {
-            return None; // Equivalent to _gl_alloc_nomem()
-        }
-        return Some(Vec::new()); // Return an empty vector
+    if n > usize::MAX / s {
+        return None; // Simulating _gl_alloc_nomem()
     }
-    if s > usize::MAX {
-        if n != 0 {
-            return None; // Equivalent to _gl_alloc_nomem()
-        }
-        return Some(Vec::new()); // Return an empty vector
-    }
+    
     let total_size = n.checked_mul(s)?;
-    Some(vec![0u8; total_size]) // Allocate and initialize the vector with zeros
+    let vec = vec![0u8; total_size];
+    Some(vec)
 }
 
 #[no_mangle]
 #[inline]
 #[linkage = "external"]
-pub fn irealloc(p: Option<&mut Vec<u8>>, s: usize) -> Option<Vec<u8>> {
+pub fn irealloc(p: Option<Vec<u8>>, s: usize) -> Option<Vec<u8>> {
     if s <= usize::MAX {
-        let mut vec = p.map_or_else(Vec::new, |v| v.clone());
+        let mut vec = p.unwrap_or_else(Vec::new);
         vec.resize(s, 0);
         Some(vec)
     } else {
-        None // Assuming _gl_alloc_nomem() returns None in the idiomatic Rust version
+        return None; // Assuming _gl_alloc_nomem() returns None in this context
     }
 }
 
 #[no_mangle]
 #[inline]
 #[linkage = "external"]
-pub fn imalloc(s: idx_t) -> Option<Vec<u8>> {
-    if s as usize <= usize::MAX {
-        let vec = Vec::with_capacity(s as usize);
-        Some(vec)
+pub fn imalloc(s: usize) -> Option<Box<[u8]>> {
+    if s <= usize::MAX {
+        let layout = std::alloc::Layout::from_size_align(s, 1).ok()?;
+        let ptr = unsafe { std::alloc::alloc(layout) };
+        if ptr.is_null() {
+            None
+        } else {
+            Some(unsafe { Box::from_raw(std::slice::from_raw_parts_mut(ptr, s)) })
+        }
     } else {
-        None
+        None // Return None instead of calling _gl_alloc_nomem()
     }
 }
 
@@ -93,11 +91,7 @@ pub fn imalloc(s: idx_t) -> Option<Vec<u8>> {
 #[cold]
 #[inline]
 #[linkage = "external"]
-pub fn _gl_alloc_nomem() -> *mut libc::c_void {
-    // Simulating allocation failure by setting errno and returning a null pointer
-    unsafe {
-        *__errno_location() = 12; // Set errno to ENOMEM
-    }
-    std::ptr::null_mut() // Return a null pointer
+pub unsafe extern "C" fn _gl_alloc_nomem() -> *mut libc::c_void {
+    *__errno_location() = 12 as libc::c_int;
+    return 0 as *mut libc::c_void;
 }
-

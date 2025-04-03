@@ -47,10 +47,10 @@ pub struct _IO_FILE {
 pub type _IO_lock_t = ();
 pub type FILE = _IO_FILE;
 pub type off_t = __off_t;
-fn clear_ungetc_buffer_preserving_position(fp: &mut *mut FILE) {
+fn clear_ungetc_buffer_preserving_position(fp: *mut FILE) {
     unsafe {
-        if (**fp)._flags & 0x100 != 0 {
-            rpl_fseeko(*fp, 0, 1); // 1 corresponds to SEEK_CUR
+        if (*fp)._flags & 0x100 != 0 {
+            rpl_fseeko(fp, 0, 1);
         }
     }
 }
@@ -60,6 +60,6 @@ pub unsafe extern "C" fn rpl_fflush(mut stream: *mut FILE) -> libc::c_int {
     if stream.is_null() || !(__freading(stream) != 0 as libc::c_int) {
         return fflush(stream);
     }
-    clear_ungetc_buffer_preserving_position(&mut stream);
+    clear_ungetc_buffer_preserving_position(stream);
     return fflush(stream);
 }

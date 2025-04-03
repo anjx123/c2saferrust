@@ -1,4 +1,4 @@
-use std::ptr;
+use std::slice;
 
 use ::libc;
 extern "C" {
@@ -24,7 +24,7 @@ pub unsafe extern "C" fn setlocale_null_unlocked(
 #[no_mangle]
 pub fn setlocale_null_r_unlocked(
     category: libc::c_int,
-    buf: &mut Vec<u8>,
+    buf: &mut [libc::c_char],
 ) -> libc::c_int {
     let result: *const libc::c_char;
     unsafe {
@@ -33,30 +33,22 @@ pub fn setlocale_null_r_unlocked(
     
     if result.is_null() {
         if !buf.is_empty() {
-            buf[0] = b'\0';
+            buf[0] = '\0' as i32 as libc::c_char;
         }
-        return 22;
+        return 22 as libc::c_int;
     } else {
-        let length: usize;
-        unsafe {
-            length = strlen(result) as usize;
-        }
-        
+        let length: usize = unsafe { strlen(result) } as usize;
         if length < buf.len() {
-            unsafe {
-                std::ptr::copy_nonoverlapping(result as *const u8, buf.as_mut_ptr(), length);
-            }
-            buf[length] = b'\0';
-            return 0;
+            buf[..length].copy_from_slice(unsafe { std::slice::from_raw_parts(result, length) });
+            buf[length] = '\0' as i32 as libc::c_char;
+            return 0 as libc::c_int;
         } else {
             if !buf.is_empty() {
                 let copy_length = buf.len() - 1;
-                unsafe {
-                    std::ptr::copy_nonoverlapping(result as *const u8, buf.as_mut_ptr(), copy_length);
-                }
-                buf[copy_length] = b'\0';
+                buf[..copy_length].copy_from_slice(unsafe { std::slice::from_raw_parts(result, copy_length) });
+                buf[copy_length] = '\0' as i32 as libc::c_char;
             }
-            return 34;
+            return 34 as libc::c_int;
         }
     }
 }

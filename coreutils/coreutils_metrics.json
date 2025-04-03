@@ -1,0 +1,156 @@
+{
+    "cat": {
+        "original": {
+            "unsafe_spans": 9321,
+            "unsafe_casts": 9321,
+            "unsafe_calls": 1728,
+            "raw_pointer_derefs": 540,
+            "raw_pointer_decls": 336
+        },
+        "translated": {
+            "unsafe_spans": 7100,
+            "unsafe_casts": 7100,
+            "unsafe_calls": 1559,
+            "raw_pointer_derefs": 442,
+            "raw_pointer_decls": 247
+        },
+        "nochunking": {
+            "unsafe_spans": 5610,
+            "unsafe_casts": 5610,
+            "unsafe_calls": 1523,
+            "raw_pointer_derefs": 420,
+            "raw_pointer_decls": 235
+        },
+        "randomized": {
+            "unsafe_spans": 6863,
+            "unsafe_casts": 6863,
+            "unsafe_calls": 1574,
+            "raw_pointer_derefs": 418,
+            "raw_pointer_decls": 254
+        }
+    },
+    "head": {
+        "original": {
+            "unsafe_spans": 10333,
+            "unsafe_casts": 10333,
+            "unsafe_calls": 2175,
+            "raw_pointer_derefs": 732,
+            "raw_pointer_decls": 347
+        },
+        "translated": {
+            "unsafe_spans": 7838,
+            "unsafe_casts": 7838,
+            "unsafe_calls": 1888,
+            "raw_pointer_derefs": 576,
+            "raw_pointer_decls": 249
+        },
+        "nochunking": {
+            "unsafe_spans": 7969,
+            "unsafe_casts": 7969,
+            "unsafe_calls": 2197,
+            "raw_pointer_derefs": 586,
+            "raw_pointer_decls": 252
+        },
+        "randomized": {
+            "unsafe_spans": 7845,
+            "unsafe_casts": 7845,
+            "unsafe_calls": 1972,
+            "raw_pointer_derefs": 582,
+            "raw_pointer_decls": 256
+        }
+    },
+    "pwd": {
+        "original": {
+            "unsafe_spans": 7450,
+            "unsafe_casts": 7450,
+            "unsafe_calls": 1473,
+            "raw_pointer_derefs": 511,
+            "raw_pointer_decls": 300
+        },
+        "translated": {
+            "unsafe_spans": 5604,
+            "unsafe_casts": 5604,
+            "unsafe_calls": 1437,
+            "raw_pointer_derefs": 390,
+            "raw_pointer_decls": 225
+        }
+    },
+    "split": {
+        "original": {
+            "unsafe_spans": 17337,
+            "unsafe_casts": 17337,
+            "unsafe_calls": 3508,
+            "raw_pointer_derefs": 1062,
+            "raw_pointer_decls": 448
+        },
+        "translated": {
+            "unsafe_spans": 14052,
+            "unsafe_casts": 14052,
+            "unsafe_calls": 3314,
+            "raw_pointer_derefs": 880,
+            "raw_pointer_decls": 376
+        }
+    },
+    "tail": {
+        "original": {
+            "unsafe_spans": 17657,
+            "unsafe_casts": 17657,
+            "unsafe_calls": 3762,
+            "raw_pointer_derefs": 1710,
+            "raw_pointer_decls": 686
+        },
+        "translated": {
+            "unsafe_spans": 13188,
+            "unsafe_casts": 13188,
+            "unsafe_calls": 3505,
+            "raw_pointer_derefs": 1316,
+            "raw_pointer_decls": 512
+        }
+    },
+    "truncate": {
+        "original": {
+            "unsafe_spans": 9412,
+            "unsafe_casts": 9412,
+            "unsafe_calls": 1731,
+            "raw_pointer_derefs": 606,
+            "raw_pointer_decls": 303
+        },
+        "translated": {
+            "unsafe_spans": 7781,
+            "unsafe_casts": 7781,
+            "unsafe_calls": 1599,
+            "raw_pointer_derefs": 503,
+            "raw_pointer_decls": 237
+        }
+    },
+    "uniq": {
+        "original": {
+            "unsafe_spans": 10472,
+            "unsafe_casts": 10472,
+            "unsafe_calls": 1976,
+            "raw_pointer_derefs": 649,
+            "raw_pointer_decls": 422
+        },
+        "translated": {
+            "unsafe_spans": 7440,
+            "unsafe_casts": 7440,
+            "unsafe_calls": 1754,
+            "raw_pointer_derefs": 476,
+            "raw_pointer_decls": 308
+        },
+        "nochunking": {
+            "unsafe_spans": 7407,
+            "unsafe_casts": 7407,
+            "unsafe_calls": 1889,
+            "raw_pointer_derefs": 476,
+            "raw_pointer_decls": 313
+        },
+        "randomized": {
+            "unsafe_spans": 7807,
+            "unsafe_casts": 7807,
+            "unsafe_calls": 1887,
+            "raw_pointer_derefs": 492,
+            "raw_pointer_decls": 300
+        }
+    }
+}

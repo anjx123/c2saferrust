@@ -1,0 +1,1616 @@
+[
+  {
+    "func_defid": "DefId(0:72 ~ oxidate_out[187d]::url_free)",
+    "span": "src/main.rs:1483:1: 1488:2 (#0)",
+    "pieces": [
+      "src/main.rs:1483:1: 1488:2 (#0)"
+    ],
+    "sub_chunks": [],
+    "num_lines": 8,
+    "source": "pub unsafe extern \"C\" fn url_free(mut data: *mut url_data_t) {\n    if data.is_null() {\n        return;\n    }\n    free((*data).whole_url as *mut libc::c_void);\n    free((*data).query as *mut libc::c_void);\n    free(data as *mut libc::c_void);\n}",
+    "calls": [
+      {
+        "caller": "DefId(0:80 ~ oxidate_out[187d]::url_get_port)",
+        "span": "src/main.rs:1380:5: 1380:32 (#0)",
+        "source": "url_free(Some(parsed_box));"
+      },
+      {
+        "caller": "DefId(0:66 ~ oxidate_out[187d]::url_parse)",
+        "span": "src/main.rs:1147:5: 1147:20 (#0)",
+        "source": "url_free(None);"
+      },
+      {
+        "caller": "DefId(0:73 ~ oxidate_out[187d]::url_get_hostname)",
+        "span": "src/main.rs:1243:5: 1243:51 (#0)",
+        "source": "unsafe { url_free(Some(Box::from_raw(data))) }"
+      },
+      {
+        "caller": "DefId(0:74 ~ oxidate_out[187d]::url_get_host)",
+        "span": "src/main.rs:1267:9: 1267:34 (#0)",
+        "source": "url_free(Some(data_box));"
+      },
+      {
+        "caller": "DefId(0:72 ~ oxidate_out[187d]::url_get_userinfo)",
+        "span": "src/main.rs:1215:5: 1215:30 (#0)",
+        "source": "url_free(Some(data_box));"
+      },
+      {
+        "caller": "DefId(0:66 ~ oxidate_out[187d]::url_parse)",
+        "span": "src/main.rs:1149:5: 1149:52 (#0)",
+        "source": "url_free(Some(unsafe { Box::from_raw(data) }));"
+      },
+      {
+        "caller": "DefId(0:75 ~ oxidate_out[187d]::url_get_pathname)",
+        "span": "src/main.rs:1292:5: 1292:55 (#0)",
+        "source": "unsafe { url_free(Some(Box::from_raw(data_ptr))) }"
+      },
+      {
+        "caller": "DefId(0:76 ~ oxidate_out[187d]::url_get_path)",
+        "span": "src/main.rs:1314:9: 1314:49 (#0)",
+        "source": "url_free(Some(Box::from_raw(data_ptr)));"
+      },
+      {
+        "caller": "DefId(0:73 ~ oxidate_out[187d]::url_get_hostname)",
+        "span": "src/main.rs:1229:9: 1229:34 (#0)",
+        "source": "unsafe { url_free(None) }"
+      },
+      {
+        "caller": "DefId(0:79 ~ oxidate_out[187d]::url_get_fragment)",
+        "span": "src/main.rs:1363:5: 1363:30 (#0)",
+        "source": "url_free(Some(data_box));"
+      }
+    ],
+    "globals": [],
+    "imports": [
+      {
+        "span": "src/main.rs:19:1: 19:22 (#0)",
+        "source": "use std::borrow::Cow;"
+      },
+      {
+        "span": "src/main.rs:20:1: 20:26 (#0)",
+        "source": "use std::os::raw::c_char;"
+      },
+      {
+        "span": "src/main.rs:25:1: 25:31 (#0)",
+        "source": "use std::ffi::{CStr, CString};"
+      },
+      {
+        "span": "src/main.rs:25:16: 25:20 (#0)",
+        "source": "CStr"
+      },
+      {
+        "span": "src/main.rs:25:22: 25:29 (#0)",
+        "source": "CString"
+      },
+      {
+        "span": "src/main.rs:24:1: 24:12 (#0)",
+        "source": "use ::libc;"
+      },
+      {
+        "span": "src/main.rs:22:1: 22:14 (#0)",
+        "source": "use std::ptr;"
+      }
+    ],
+    "chunks": []
+  },
+  {
+    "func_defid": "DefId(0:51 ~ oxidate_out[187d]::strdup)",
+    "span": "src/main.rs:563:1: 570:2 (#0)",
+    "pieces": [
+      "src/main.rs:563:1: 570:2 (#0)"
+    ],
+    "sub_chunks": [],
+    "num_lines": 8,
+    "source": "pub unsafe extern \"C\" fn strdup(mut str: *const libc::c_char) -> *mut libc::c_char {\n    let n = (strlen(str)).wrapping_add(1 as libc::c_int as libc::c_ulong) as libc::c_int;\n    let mut dup = malloc(n as libc::c_ulong) as *mut libc::c_char;\n    if !dup.is_null() {\n        strcpy(dup, str);\n    }\n    return dup;\n}",
+    "calls": [
+      {
+        "caller": "DefId(0:66 ~ oxidate_out[187d]::url_parse)",
+        "span": "src/main.rs:764:5: 764:29 (#0)",
+        "source": "let mut p = strdup(url);"
+      }
+    ],
+    "globals": [],
+    "imports": [
+      {
+        "span": "src/main.rs:19:1: 19:22 (#0)",
+        "source": "use std::borrow::Cow;"
+      },
+      {
+        "span": "src/main.rs:20:1: 20:26 (#0)",
+        "source": "use std::os::raw::c_char;"
+      },
+      {
+        "span": "src/main.rs:24:1: 24:12 (#0)",
+        "source": "use ::libc;"
+      },
+      {
+        "span": "src/main.rs:25:1: 25:31 (#0)",
+        "source": "use std::ffi::{CStr, CString};"
+      },
+      {
+        "span": "src/main.rs:25:16: 25:20 (#0)",
+        "source": "CStr"
+      },
+      {
+        "span": "src/main.rs:25:22: 25:29 (#0)",
+        "source": "CString"
+      },
+      {
+        "span": "src/main.rs:22:1: 22:14 (#0)",
+        "source": "use std::ptr;"
+      }
+    ],
+    "chunks": []
+  },
+  {
+    "func_defid": "DefId(0:53 ~ oxidate_out[187d]::decode_percent)",
+    "span": "src/main.rs:590:1: 615:2 (#0)",
+    "pieces": [
+      "src/main.rs:590:1: 615:2 (#0)"
+    ],
+    "sub_chunks": [],
+    "num_lines": 33,
+    "source": "unsafe extern \"C\" fn decode_percent(mut s: *mut libc::c_char) -> *mut libc::c_char {\n    let mut in_0 = s;\n    let mut out = s;\n    while *in_0 != 0 {\n        if *in_0 as libc::c_int == '%' as i32 {\n            in_0 = in_0.offset(1);\n            let high = unhex(in_0);\n            if high < 0 as libc::c_int || *in_0 as libc::c_int == '\\0' as i32 {\n                return 0 as *mut libc::c_char;\n            }\n            in_0 = in_0.offset(1);\n            let low = unhex(in_0);\n            if low < 0 as libc::c_int || *in_0 as libc::c_int == '\\0' as i32 {\n                return 0 as *mut libc::c_char;\n            }\n            *out = (high as libc::c_uint)\n                .wrapping_mul(16 as libc::c_uint)\n                .wrapping_add(low as libc::c_uint) as libc::c_char;\n            out = out.offset(1);\n            out;\n            in_0 = in_0.offset(1);\n            in_0;\n        } else {\n            let fresh0 = in_0;\n            in_0 = in_0.offset(1);\n            let fresh1 = out;\n            out = out.offset(1);\n            *fresh1 = *fresh0;\n        }\n    }\n    *out = '\\0' as i32 as libc::c_char;\n    return s;\n}",
+    "calls": [
+      {
+        "caller": "DefId(0:65 ~ oxidate_out[187d]::parse_query_string)",
+        "span": "src/main.rs:724:5: 725:54 (#0)",
+        "source": "let decoded_cstring = decode_percent(value_str)\n        .expect(\"Invalid percent encoding in value\");"
+      },
+      {
+        "caller": "DefId(0:66 ~ oxidate_out[187d]::url_parse)",
+        "span": "src/main.rs:1098:5: 1099:57 (#0)",
+        "source": "let decoded_cstring = decode_percent(p_str)\n        .expect(\"Invalid percent encoding in fragment\");"
+      },
+      {
+        "caller": "DefId(0:66 ~ oxidate_out[187d]::url_parse)",
+        "span": "src/main.rs:1025:5: 1026:53 (#0)",
+        "source": "let decoded_cstring = decode_percent(p_str)\n        .expect(\"Invalid percent encoding in path\");"
+      },
+      {
+        "caller": "DefId(0:65 ~ oxidate_out[187d]::parse_query_string)",
+        "span": "src/main.rs:713:5: 714:52 (#0)",
+        "source": "let decoded_cstring = decode_percent(key_str)\n        .expect(\"Invalid percent encoding in key\");"
+      },
+      {
+        "caller": "DefId(0:66 ~ oxidate_out[187d]::url_parse)",
+        "span": "src/main.rs:1054:5: 1055:57 (#0)",
+        "source": "let decoded_cstring = decode_percent(query_ptr)\n        .expect(\"Invalid percent encoding in fragment\");"
+      }
+    ],
+    "globals": [],
+    "imports": [
+      {
+        "span": "src/main.rs:20:1: 20:26 (#0)",
+        "source": "use std::os::raw::c_char;"
+      },
+      {
+        "span": "src/main.rs:22:1: 22:14 (#0)",
+        "source": "use std::ptr;"
+      },
+      {
+        "span": "src/main.rs:24:1: 24:12 (#0)",
+        "source": "use ::libc;"
+      },
+      {
+        "span": "src/main.rs:25:1: 25:31 (#0)",
+        "source": "use std::ffi::{CStr, CString};"
+      },
+      {
+        "span": "src/main.rs:25:22: 25:29 (#0)",
+        "source": "CString"
+      },
+      {
+        "span": "src/main.rs:19:1: 19:22 (#0)",
+        "source": "use std::borrow::Cow;"
+      },
+      {
+        "span": "src/main.rs:25:16: 25:20 (#0)",
+        "source": "CStr"
+      }
+    ],
+    "chunks": []
+  },
+  {
+    "func_defid": "DefId(0:54 ~ oxidate_out[187d]::scan_part)",
+    "span": "src/main.rs:617:1: 640:2 (#0)",
+    "pieces": [
+      "src/main.rs:617:1: 640:2 (#0)"
+    ],
+    "sub_chunks": [],
+    "num_lines": 24,
+    "source": "unsafe extern \"C\" fn scan_part(\n    mut start: *mut libc::c_char,\n    mut category: Category,\n    mut delimiter1: libc::c_char,\n    mut delimiter2: libc::c_char,\n) -> *mut libc::c_char {\n    let mut p = start;\n    loop {\n        if *p as libc::c_int == '\\0' as i32\n            || *p as libc::c_int == delimiter1 as libc::c_int\n            || *p as libc::c_int == delimiter2 as libc::c_int\n        {\n            return p;\n        }\n        if char_cat[*p as libc::c_uchar as usize] as libc::c_uint\n            & category as libc::c_uint != 0\n        {\n            p = p.offset(1);\n            p;\n        } else {\n            return 0 as *mut libc::c_char\n        }\n    };\n}",
+    "calls": [
+      {
+        "caller": "DefId(0:66 ~ oxidate_out[187d]::url_parse)",
+        "span": "src/main.rs:1001:37: 1006:39 (#0)",
+        "source": "path_end = scan_part(\n                                        p,\n                                        PCharSlash,\n                                        '?' as i32 as libc::c_char,\n                                        '#' as i32 as libc::c_char,\n                                    );"
+      },
+      {
+        "caller": "DefId(0:66 ~ oxidate_out[187d]::url_parse)",
+        "span": "src/main.rs:873:33: 878:35 (#0)",
+        "source": "hostname_end = scan_part(\n                                    p,\n                                    IPv6Char,\n                                    ']' as i32 as libc::c_char,\n                                    '\\0' as i32 as libc::c_char,\n                                );"
+      },
+      {
+        "caller": "DefId(0:65 ~ oxidate_out[187d]::parse_query_string)",
+        "span": "src/main.rs:700:13: 705:15 (#0)",
+        "source": "let mut key_end = scan_part(\n                p_0,\n                Query,\n                '=' as i32 as libc::c_char,\n                '\\0' as i32 as libc::c_char,\n            );"
+      },
+      {
+        "caller": "DefId(0:66 ~ oxidate_out[187d]::url_parse)",
+        "span": "src/main.rs:845:10: 850:27 (#0)",
+        "source": "userinfo_end = scan_part(\n                            p,\n                            Userinfo,\n                            '@' as i32 as libc::c_char,\n                            '\\0' as i32 as libc::c_char,\n                        );"
+      },
+      {
+        "caller": "DefId(0:66 ~ oxidate_out[187d]::url_parse)",
+        "span": "src/main.rs:1031:45: 1036:47 (#0)",
+        "source": "let mut query_end = scan_part(\n                                                p,\n                                                Query,\n                                                '#' as i32 as libc::c_char,\n                                                '\\0' as i32 as libc::c_char,\n                                            );"
+      },
+      {
+        "caller": "DefId(0:65 ~ oxidate_out[187d]::parse_query_string)",
+        "span": "src/main.rs:681:9: 686:11 (#0)",
+        "source": "let mut kv_end = scan_part(\n            p_0,\n            Query,\n            '&' as i32 as libc::c_char,\n            ';' as i32 as libc::c_char,\n        );"
+      },
+      {
+        "caller": "DefId(0:66 ~ oxidate_out[187d]::url_parse)",
+        "span": "src/main.rs:1087:45: 1092:47 (#0)",
+        "source": "let mut fragment_end_0 = scan_part(\n                                                p,\n                                                Fragment,\n                                                '\\0' as i32 as libc::c_char,\n                                                '\\0' as i32 as libc::c_char,\n                                            );"
+      },
+      {
+        "caller": "DefId(0:66 ~ oxidate_out[187d]::url_parse)",
+        "span": "src/main.rs:777:9: 782:11 (#0)",
+        "source": "protocol_end = scan_part(\n            p,\n            Scheme,\n            ':' as i32 as libc::c_char,\n            '\\0' as i32 as libc::c_char,\n        );"
+      },
+      {
+        "caller": "DefId(0:66 ~ oxidate_out[187d]::url_parse)",
+        "span": "src/main.rs:1043:53: 1048:55 (#0)",
+        "source": "let mut fragment_end = scan_part(\n                                                        query_end.offset(1 as libc::c_int as isize),\n                                                        Fragment,\n                                                        '\\0' as i32 as libc::c_char,\n                                                        '\\0' as i32 as libc::c_char,\n                                                    );"
+      },
+      {
+        "caller": "DefId(0:66 ~ oxidate_out[187d]::url_parse)",
+        "span": "src/main.rs:924:33: 930:35 (#0)",
+        "source": "hostname_end = scan_part(\n                                    p,\n                                    (Unreserved as libc::c_int | SubDelim as libc::c_int)\n                                        as Category,\n                                    ':' as i32 as libc::c_char,\n                                    '/' as i32 as libc::c_char,\n                                );"
+      }
+    ],
+    "globals": [],
+    "imports": [
+      {
+        "span": "src/main.rs:19:1: 19:22 (#0)",
+        "source": "use std::borrow::Cow;"
+      },
+      {
+        "span": "src/main.rs:20:1: 20:26 (#0)",
+        "source": "use std::os::raw::c_char;"
+      },
+      {
+        "span": "src/main.rs:25:1: 25:31 (#0)",
+        "source": "use std::ffi::{CStr, CString};"
+      },
+      {
+        "span": "src/main.rs:25:16: 25:20 (#0)",
+        "source": "CStr"
+      },
+      {
+        "span": "src/main.rs:25:22: 25:29 (#0)",
+        "source": "CString"
+      },
+      {
+        "span": "src/main.rs:22:1: 22:14 (#0)",
+        "source": "use std::ptr;"
+      },
+      {
+        "span": "src/main.rs:24:1: 24:12 (#0)",
+        "source": "use ::libc;"
+      }
+    ],
+    "chunks": []
+  },
+  {
+    "func_defid": "DefId(0:56 ~ oxidate_out[187d]::parse_query_string)",
+    "span": "src/main.rs:651:1: 744:2 (#0)",
+    "pieces": [
+      "src/main.rs:651:1: 744:2 (#0)"
+    ],
+    "sub_chunks": [],
+    "num_lines": 80,
+    "source": "unsafe extern \"C\" fn parse_query_string(\n    mut begin: *mut libc::c_char,\n    mut end: *mut libc::c_char,\n) -> *mut url_key_value {\n    let mut current_block: u64;\n    let mut elements = 1 as libc::c_int as libc::c_uint;\n    let mut p: *const libc::c_char = begin;\n    while p != end as *const libc::c_char {\n        if *p as libc::c_int == '&' as i32 || *p as libc::c_int == ';' as i32 {\n            elements = elements.wrapping_add(1);\n            elements;\n        }\n        p = p.offset(1);\n        p;\n    }\n    let mut kv = calloc(\n        elements.wrapping_add(1 as libc::c_int as libc::c_uint) as libc::c_ulong,\n        ::core::mem::size_of::<url_key_value>() as libc::c_ulong,\n    ) as *mut url_key_value;\n    if kv.is_null() {\n        return 0 as *mut url_key_value;\n    }\n    let mut p_0 = begin;\n    let mut element = 0 as libc::c_int as libc::c_uint;\n    loop {\n        if !(element <= elements && p_0 < end) {\n            current_block = 11584701595673473500;\n            break;\n        }\n        let mut key = p_0;\n        let mut kv_end = scan_part(\n            p_0,\n            Query,\n            '&' as i32 as libc::c_char,\n            ';' as i32 as libc::c_char,\n        );\n        if kv_end.is_null() {\n            fprintf(\n                stderr,\n                b\"ERROR %s Line %u! p=\\xC2\\xAB%s\\xC2\\xBB\\n\\0\" as *const u8\n                    as *const libc::c_char,\n                b\"/workspace/programs/url/url.c\\0\" as *const u8 as *const libc::c_char,\n                153 as libc::c_int,\n                p_0,\n            );\n            current_block = 7272095228866324518;\n            break;\n        } else {\n            *kv_end = '\\0' as i32 as libc::c_char;\n            let mut key_end = scan_part(\n                p_0,\n                Query,\n                '=' as i32 as libc::c_char,\n                '\\0' as i32 as libc::c_char,\n            );\n            let has_value = *key_end as libc::c_int == '=' as i32;\n            *key_end = '\\0' as i32 as libc::c_char;\n            let ref mut fresh2 = (*kv.offset(element as isize)).key;\n            *fresh2 = decode_percent(key);\n            if has_value {\n                let mut value = key_end.offset(1 as libc::c_int as isize);\n                let ref mut fresh3 = (*kv.offset(element as isize)).value;\n                *fresh3 = decode_percent(value);\n            } else {\n                let ref mut fresh4 = (*kv.offset(element as isize)).value;\n                *fresh4 = key_end;\n            }\n            p_0 = kv_end.offset(1 as libc::c_int as isize);\n            element = element.wrapping_add(1);\n            element;\n        }\n    }\n    match current_block {\n        11584701595673473500 => return kv,\n        _ => {\n            free(kv as *mut libc::c_void);\n            return 0 as *mut url_key_value;\n        }\n    };\n}",
+    "calls": [
+      {
+        "caller": "DefId(0:66 ~ oxidate_out[187d]::url_parse)",
+        "span": "src/main.rs:1041:49: 1041:98 (#0)",
+        "source": "(*data).query = parse_query_string(p, query_end);"
+      }
+    ],
+    "globals": [
+      {
+        "span": "src/main.rs:108:1: 108:32 (#0)",
+        "source": "pub const Query: Category = 64;"
+      }
+    ],
+    "imports": [
+      {
+        "span": "src/main.rs:25:16: 25:20 (#0)",
+        "source": "CStr"
+      },
+      {
+        "span": "src/main.rs:20:1: 20:26 (#0)",
+        "source": "use std::os::raw::c_char;"
+      },
+      {
+        "span": "src/main.rs:19:1: 19:22 (#0)",
+        "source": "use std::borrow::Cow;"
+      },
+      {
+        "span": "src/main.rs:25:1: 25:31 (#0)",
+        "source": "use std::ffi::{CStr, CString};"
+      },
+      {
+        "span": "src/main.rs:22:1: 22:14 (#0)",
+        "source": "use std::ptr;"
+      },
+      {
+        "span": "src/main.rs:24:1: 24:12 (#0)",
+        "source": "use ::libc;"
+      },
+      {
+        "span": "src/main.rs:25:22: 25:29 (#0)",
+        "source": "CString"
+      }
+    ],
+    "chunks": []
+  },
+  {
+    "func_defid": "DefId(0:55 ~ oxidate_out[187d]::scan_decimal_number)",
+    "span": "src/main.rs:641:1: 650:2 (#0)",
+    "pieces": [
+      "src/main.rs:641:1: 650:2 (#0)"
+    ],
+    "sub_chunks": [],
+    "num_lines": 10,
+    "source": "unsafe extern \"C\" fn scan_decimal_number(\n    mut start: *mut libc::c_char,\n) -> *mut libc::c_char {\n    let mut p = start;\n    while *p as libc::c_int >= '0' as i32 && *p as libc::c_int <= '9' as i32 {\n        p = p.offset(1);\n        p;\n    }\n    return if p != start { p } else { 0 as *mut libc::c_char };\n}",
+    "calls": [
+      {
+        "caller": "DefId(0:66 ~ oxidate_out[187d]::url_parse)",
+        "span": "src/main.rs:898:41: 900:43 (#0)",
+        "source": "let mut port_end = scan_decimal_number(\n                                            hostname_end.offset(1 as libc::c_int as isize),\n                                        );"
+      },
+      {
+        "caller": "DefId(0:66 ~ oxidate_out[187d]::url_parse)",
+        "span": "src/main.rs:946:41: 948:43 (#0)",
+        "source": "let mut port_end_0 = scan_decimal_number(\n                                            hostname_end.offset(1 as libc::c_int as isize),\n                                        );"
+      }
+    ],
+    "globals": [],
+    "imports": [
+      {
+        "span": "src/main.rs:19:1: 19:22 (#0)",
+        "source": "use std::borrow::Cow;"
+      },
+      {
+        "span": "src/main.rs:20:1: 20:26 (#0)",
+        "source": "use std::os::raw::c_char;"
+      },
+      {
+        "span": "src/main.rs:24:1: 24:12 (#0)",
+        "source": "use ::libc;"
+      },
+      {
+        "span": "src/main.rs:25:1: 25:31 (#0)",
+        "source": "use std::ffi::{CStr, CString};"
+      },
+      {
+        "span": "src/main.rs:22:1: 22:14 (#0)",
+        "source": "use std::ptr;"
+      },
+      {
+        "span": "src/main.rs:25:16: 25:20 (#0)",
+        "source": "CStr"
+      },
+      {
+        "span": "src/main.rs:25:22: 25:29 (#0)",
+        "source": "CString"
+      }
+    ],
+    "chunks": []
+  },
+  {
+    "func_defid": "DefId(0:60 ~ oxidate_out[187d]::url_is_ssh)",
+    "span": "src/main.rs:1169:1: 1171:2 (#0)",
+    "pieces": [
+      "src/main.rs:1169:1: 1171:2 (#0)"
+    ],
+    "sub_chunks": [],
+    "num_lines": 8,
+    "source": "pub unsafe extern \"C\" fn url_is_ssh(mut str: *const libc::c_char) -> bool {\n    if 0 as libc::c_int == strcmp(str, b\"ssh\\0\" as *const u8 as *const libc::c_char)\n        || 0 as libc::c_int == strcmp(str, b\"git\\0\" as *const u8 as *const libc::c_char)\n    {\n        return 1 as libc::c_int != 0;\n    }\n    return 0 as libc::c_int != 0;\n}",
+    "calls": [
+      {
+        "caller": "DefId(0:66 ~ oxidate_out[187d]::url_parse)",
+        "span": "src/main.rs:800:1: 800:39 (#0)",
+        "source": "let is_ssh = url_is_ssh(protocol_str);"
+      }
+    ],
+    "globals": [],
+    "imports": [
+      {
+        "span": "src/main.rs:22:1: 22:14 (#0)",
+        "source": "use std::ptr;"
+      },
+      {
+        "span": "src/main.rs:25:16: 25:20 (#0)",
+        "source": "CStr"
+      },
+      {
+        "span": "src/main.rs:25:22: 25:29 (#0)",
+        "source": "CString"
+      },
+      {
+        "span": "src/main.rs:24:1: 24:12 (#0)",
+        "source": "use ::libc;"
+      },
+      {
+        "span": "src/main.rs:20:1: 20:26 (#0)",
+        "source": "use std::os::raw::c_char;"
+      },
+      {
+        "span": "src/main.rs:25:1: 25:31 (#0)",
+        "source": "use std::ffi::{CStr, CString};"
+      },
+      {
+        "span": "src/main.rs:19:1: 19:22 (#0)",
+        "source": "use std::borrow::Cow;"
+      }
+    ],
+    "chunks": []
+  },
+  {
+    "func_defid": "DefId(0:57 ~ oxidate_out[187d]::url_parse)",
+    "span": "src/main.rs:746:1: 1152:2 (#0)",
+    "pieces": [
+      "src/main.rs:746:1: 747:4 (#0)",
+      "src/main.rs:1152:1: 1152:2 (#0)"
+    ],
+    "sub_chunks": [
+      7
+    ],
+    "num_lines": 3,
+    "source": "pub unsafe extern \"C\" fn url_parse(mut url: *const libc::c_char) -> *mut url_data_t {\n   <<chunk 7>>}",
+    "calls": [
+      {
+        "caller": "DefId(0:72 ~ oxidate_out[187d]::url_get_userinfo)",
+        "span": "src/main.rs:1197:20: 1197:56 (#0)",
+        "source": "unsafe { url_parse(c_url.as_ptr()) }"
+      },
+      {
+        "caller": "DefId(0:73 ~ oxidate_out[187d]::url_get_hostname)",
+        "span": "src/main.rs:1225:16: 1225:52 (#0)",
+        "source": "unsafe { url_parse(c_url.as_ptr()) }"
+      },
+      {
+        "caller": "DefId(0:79 ~ oxidate_out[187d]::url_get_fragment)",
+        "span": "src/main.rs:1347:20: 1347:56 (#0)",
+        "source": "unsafe { url_parse(c_url.as_ptr()) }"
+      },
+      {
+        "caller": "DefId(0:80 ~ oxidate_out[187d]::url_get_port)",
+        "span": "src/main.rs:1370:22: 1370:58 (#0)",
+        "source": "unsafe { url_parse(c_url.as_ptr()) }"
+      },
+      {
+        "caller": "DefId(0:76 ~ oxidate_out[187d]::url_get_path)",
+        "span": "src/main.rs:1301:20: 1301:56 (#0)",
+        "source": "unsafe { url_parse(c_url.as_ptr()) }"
+      },
+      {
+        "caller": "DefId(0:75 ~ oxidate_out[187d]::url_get_pathname)",
+        "span": "src/main.rs:1277:20: 1277:56 (#0)",
+        "source": "unsafe { url_parse(c_url.as_ptr()) }"
+      },
+      {
+        "caller": "DefId(0:81 ~ oxidate_out[187d]::url_inspect)",
+        "span": "src/main.rs:1388:20: 1388:56 (#0)",
+        "source": "unsafe { url_parse(c_url.as_ptr()) }"
+      },
+      {
+        "caller": "DefId(0:86 ~ oxidate_out[187d]::safe_url_parse)",
+        "span": "src/main.rs:1495:18: 1495:54 (#0)",
+        "source": "unsafe { url_parse(c_url.as_ptr()) }"
+      },
+      {
+        "caller": "DefId(0:74 ~ oxidate_out[187d]::url_get_host)",
+        "span": "src/main.rs:1254:9: 1254:50 (#0)",
+        "source": "let data_ptr = url_parse(c_url.as_ptr());"
+      }
+    ],
+    "globals": [
+      {
+        "span": "src/main.rs:111:1: 111:34 (#0)",
+        "source": "pub const SubDelim: Category = 8;"
+      },
+      {
+        "span": "src/main.rs:114:1: 114:32 (#0)",
+        "source": "pub const Scheme: Category = 1;"
+      },
+      {
+        "span": "src/main.rs:108:1: 108:32 (#0)",
+        "source": "pub const Query: Category = 64;"
+      },
+      {
+        "span": "src/main.rs:105:1: 105:36 (#0)",
+        "source": "pub const IPv6Char: Category = 256;"
+      },
+      {
+        "span": "src/main.rs:110:1: 110:37 (#0)",
+        "source": "pub const PCharSlash: Category = 16;"
+      },
+      {
+        "span": "src/main.rs:107:1: 107:35 (#0)",
+        "source": "pub const Fragment: Category = 64;"
+      },
+      {
+        "span": "src/main.rs:106:1: 106:36 (#0)",
+        "source": "pub const Userinfo: Category = 128;"
+      },
+      {
+        "span": "src/main.rs:113:1: 113:36 (#0)",
+        "source": "pub const Unreserved: Category = 2;"
+      }
+    ],
+    "imports": [
+      {
+        "span": "src/main.rs:24:1: 24:12 (#0)",
+        "source": "use ::libc;"
+      },
+      {
+        "span": "src/main.rs:25:16: 25:20 (#0)",
+        "source": "CStr"
+      },
+      {
+        "span": "src/main.rs:20:1: 20:26 (#0)",
+        "source": "use std::os::raw::c_char;"
+      },
+      {
+        "span": "src/main.rs:19:1: 19:22 (#0)",
+        "source": "use std::borrow::Cow;"
+      },
+      {
+        "span": "src/main.rs:22:1: 22:14 (#0)",
+        "source": "use std::ptr;"
+      },
+      {
+        "span": "src/main.rs:25:22: 25:29 (#0)",
+        "source": "CString"
+      },
+      {
+        "span": "src/main.rs:25:1: 25:31 (#0)",
+        "source": "use std::ffi::{CStr, CString};"
+      }
+    ],
+    "chunks": [
+      {
+        "chunk_id": 0,
+        "span": "src/main.rs:869:29: 971:30 (#0)",
+        "pieces": [
+          "src/main.rs:869:29: 971:30 (#0)"
+        ],
+        "num_lines": 103,
+        "source": "hostname_end = 0 as *mut libc::c_char;\n                            if *p as libc::c_int == '[' as i32 {\n                                p = p.offset(1);\n                                p;\n                                hostname_end = scan_part(\n                                    p,\n                                    IPv6Char,\n                                    ']' as i32 as libc::c_char,\n                                    '\\0' as i32 as libc::c_char,\n                                );\n                                if hostname_end.is_null() {\n                                    fprintf(\n                                        stderr,\n                                        b\"ERROR %s Line %u! p=\\xC2\\xAB%s\\xC2\\xBB\\n\\0\" as *const u8\n                                            as *const libc::c_char,\n                                        b\"/workspace/programs/url/url.c\\0\" as *const u8\n                                            as *const libc::c_char,\n                                        234 as libc::c_int,\n                                        p,\n                                    );\n                                    current_block = 17635118975278168935;\n                                } else {\n                                    *hostname_end = '\\0' as i32 as libc::c_char;\n                                    (*data).host = p;\n                                    hostname_end = hostname_end.offset(1);\n                                    hostname_end;\n                                    if hostname_end < p_end as *mut libc::c_char && !is_ssh\n                                        && *hostname_end as libc::c_int == ':' as i32\n                                    {\n                                        let mut port_end = scan_decimal_number(\n                                            hostname_end.offset(1 as libc::c_int as isize),\n                                        );\n                                        if !port_end.is_null() {\n                                            (*data)\n                                                .port = hostname_end.offset(1 as libc::c_int as isize);\n                                            p = port_end;\n                                            current_block = 7252614138838059896;\n                                        } else {\n                                            fprintf(\n                                                stderr,\n                                                b\"ERROR %s Line %u! p=\\xC2\\xAB%s\\xC2\\xBB\\n\\0\" as *const u8\n                                                    as *const libc::c_char,\n                                                b\"/workspace/programs/url/url.c\\0\" as *const u8\n                                                    as *const libc::c_char,\n                                                247 as libc::c_int,\n                                                p,\n                                            );\n                                            current_block = 17635118975278168935;\n                                        }\n                                    } else {\n                                        p = hostname_end;\n                                        current_block = 7252614138838059896;\n                                    }\n                                }\n                            } else {\n                                hostname_end = scan_part(\n                                    p,\n                                    (Unreserved as libc::c_int | SubDelim as libc::c_int)\n                                        as Category,\n                                    ':' as i32 as libc::c_char,\n                                    '/' as i32 as libc::c_char,\n                                );\n                                if hostname_end.is_null() {\n                                    fprintf(\n                                        stderr,\n                                        b\"ERROR %s Line %u! p=\\xC2\\xAB%s\\xC2\\xBB\\n\\0\" as *const u8\n                                            as *const libc::c_char,\n                                        b\"/workspace/programs/url/url.c\\0\" as *const u8\n                                            as *const libc::c_char,\n                                        255 as libc::c_int,\n                                        p,\n                                    );\n                                    current_block = 17635118975278168935;\n                                } else {\n                                    (*data).host = p;\n                                    if !is_ssh && *hostname_end as libc::c_int == ':' as i32 {\n                                        *hostname_end = '\\0' as i32 as libc::c_char;\n                                        let mut port_end_0 = scan_decimal_number(\n                                            hostname_end.offset(1 as libc::c_int as isize),\n                                        );\n                                        if !port_end_0.is_null() {\n                                            (*data)\n                                                .port = hostname_end.offset(1 as libc::c_int as isize);\n                                            p = port_end_0;\n                                            current_block = 7252614138838059896;\n                                        } else {\n                                            fprintf(\n                                                stderr,\n                                                b\"ERROR %s Line %u! p=\\xC2\\xAB%s\\xC2\\xBB\\n\\0\" as *const u8\n                                                    as *const libc::c_char,\n                                                b\"/workspace/programs/url/url.c\\0\" as *const u8\n                                                    as *const libc::c_char,\n                                                267 as libc::c_int,\n                                                p,\n                                            );\n                                            current_block = 17635118975278168935;\n                                        }\n                                    } else {\n                                        p = hostname_end;\n                                        current_block = 7252614138838059896;\n                                    }\n                                }\n                            }",
+        "sub_chunks": [],
+        "live_in": [
+          "mut url: *const i8",
+          "mut p_end: *const i8",
+          "mut is_ssh: bool",
+          "mut hostname_end: *mut i8",
+          "mut current_block: u64",
+          "mut data: *mut url_data",
+          "mut p: *mut i8",
+          "is_ssh: bool"
+        ],
+        "live_out": [
+          "mut url: *const i8",
+          "mut p_end: *const i8",
+          "mut is_ssh: bool",
+          "mut hostname_end: *mut i8",
+          "mut current_block: u64",
+          "mut data: *mut url_data",
+          "mut p: *mut i8",
+          "is_ssh: bool"
+        ]
+      },
+      {
+        "chunk_id": 1,
+        "span": "src/main.rs:972:29: 1124:30 (#0)",
+        "pieces": [
+          "src/main.rs:972:29: 1124:30 (#0)"
+        ],
+        "num_lines": 135,
+        "source": "match current_block {\n                                17635118975278168935 => {}\n                                _ => {\n                                    memmove(\n                                        second_slash as *mut libc::c_void,\n                                        second_slash.offset(1 as libc::c_int as isize)\n                                            as *const libc::c_void,\n                                        p.offset_from(second_slash) as libc::c_long as libc::c_ulong,\n                                    );\n                                    if !((*data).userinfo).is_null() {\n                                        (*data).userinfo = ((*data).userinfo).offset(-1);\n                                        (*data).userinfo;\n                                    }\n                                    (*data).host = ((*data).host).offset(-1);\n                                    (*data).host;\n                                    if !((*data).port).is_null() {\n                                        (*data).port = ((*data).port).offset(-1);\n                                        (*data).port;\n                                    }\n                                    *p\n                                        .offset(\n                                            -(1 as libc::c_int) as isize,\n                                        ) = '\\0' as i32 as libc::c_char;\n                                    if is_ssh as libc::c_int != 0\n                                        && *p as libc::c_int == ':' as i32\n                                    {\n                                        p = p.offset(1);\n                                        p;\n                                    }\n                                    path_end = scan_part(\n                                        p,\n                                        PCharSlash,\n                                        '?' as i32 as libc::c_char,\n                                        '#' as i32 as libc::c_char,\n                                    );\n                                    if path_end.is_null() {\n                                        fprintf(\n                                            stderr,\n                                            b\"ERROR %s Line %u! p=\\xC2\\xAB%s\\xC2\\xBB\\n\\0\" as *const u8\n                                                as *const libc::c_char,\n                                            b\"/workspace/programs/url/url.c\\0\" as *const u8\n                                                as *const libc::c_char,\n                                            295 as libc::c_int,\n                                            p,\n                                        );\n                                    } else {\n                                        has_query = *path_end as libc::c_int == '?' as i32;\n                                        has_fragment = *path_end as libc::c_int == '#' as i32;\n                                        *path_end = '\\0' as i32 as libc::c_char;\n                                        (*data).path = decode_percent(p);\n                                        p = path_end.offset(1 as libc::c_int as isize);\n                                        if has_query {\n                                            let mut query_end = scan_part(\n                                                p,\n                                                Query,\n                                                '#' as i32 as libc::c_char,\n                                                '\\0' as i32 as libc::c_char,\n                                            );\n                                            if !query_end.is_null() {\n                                                let has_fragment_0 = *query_end as libc::c_int\n                                                    == '#' as i32;\n                                                *query_end = '\\0' as i32 as libc::c_char;\n                                                (*data).query = parse_query_string(p, query_end);\n                                                if has_fragment_0 {\n                                                    let mut fragment_end = scan_part(\n                                                        query_end.offset(1 as libc::c_int as isize),\n                                                        Fragment,\n                                                        '\\0' as i32 as libc::c_char,\n                                                        '\\0' as i32 as libc::c_char,\n                                                    );\n                                                    if !fragment_end.is_null() {\n                                                        (*data)\n                                                            .fragment = decode_percent(\n                                                            query_end.offset(1 as libc::c_int as isize),\n                                                        );\n                                                        current_block = 6406431739208918833;\n                                                    } else {\n                                                        fprintf(\n                                                            stderr,\n                                                            b\"ERROR %s Line %u! p=\\xC2\\xAB%s\\xC2\\xBB\\n\\0\" as *const u8\n                                                                as *const libc::c_char,\n                                                            b\"/workspace/programs/url/url.c\\0\" as *const u8\n                                                                as *const libc::c_char,\n                                                            319 as libc::c_int,\n                                                            p,\n                                                        );\n                                                        current_block = 17635118975278168935;\n                                                    }\n                                                } else {\n                                                    current_block = 6406431739208918833;\n                                                }\n                                            } else {\n                                                fprintf(\n                                                    stderr,\n                                                    b\"ERROR %s Line %u! p=\\xC2\\xAB%s\\xC2\\xBB\\n\\0\" as *const u8\n                                                        as *const libc::c_char,\n                                                    b\"/workspace/programs/url/url.c\\0\" as *const u8\n                                                        as *const libc::c_char,\n                                                    323 as libc::c_int,\n                                                    p,\n                                                );\n                                                current_block = 17635118975278168935;\n                                            }\n                                        } else if has_fragment {\n                                            let mut fragment_end_0 = scan_part(\n                                                p,\n                                                Fragment,\n                                                '\\0' as i32 as libc::c_char,\n                                                '\\0' as i32 as libc::c_char,\n                                            );\n                                            if !fragment_end_0.is_null() {\n                                                (*data).fragment = decode_percent(p);\n                                                current_block = 6406431739208918833;\n                                            } else {\n                                                fprintf(\n                                                    stderr,\n                                                    b\"ERROR %s Line %u! p=\\xC2\\xAB%s\\xC2\\xBB\\n\\0\" as *const u8\n                                                        as *const libc::c_char,\n                                                    b\"/workspace/programs/url/url.c\\0\" as *const u8\n                                                        as *const libc::c_char,\n                                                    332 as libc::c_int,\n                                                    p,\n                                                );\n                                                current_block = 17635118975278168935;\n                                            }\n                                        } else {\n                                            current_block = 6406431739208918833;\n                                        }\n                                        match current_block {\n                                            17635118975278168935 => {}\n                                            _ => return data,\n                                        }\n                                    }\n                                }\n                            }",
+        "sub_chunks": [],
+        "live_in": [
+          "mut url: *const i8",
+          "mut is_ssh: bool",
+          "mut second_slash: *mut i8",
+          "mut path_end: *mut i8",
+          "mut has_query: bool",
+          "mut has_fragment: bool",
+          "mut current_block: u64",
+          "mut data: *mut url_data",
+          "mut p: *mut i8",
+          "is_ssh: bool"
+        ],
+        "live_out": [
+          "mut url: *const i8",
+          "mut is_ssh: bool",
+          "mut second_slash: *mut i8",
+          "mut path_end: *mut i8",
+          "mut has_query: bool",
+          "mut has_fragment: bool",
+          "mut current_block: u64",
+          "mut data: *mut url_data",
+          "mut p: *mut i8",
+          "is_ssh: bool"
+        ]
+      },
+      {
+        "chunk_id": 2,
+        "span": "src/main.rs:845:9: 1125:26 (#0)",
+        "pieces": [
+          "src/main.rs:845:9: 869:28 (#0)",
+          "src/main.rs:972:1: 972:28 (#0)",
+          "src/main.rs:1125:1: 1125:26 (#0)"
+        ],
+        "num_lines": 27,
+        "source": "userinfo_end = scan_part(\n                            p,\n                            Userinfo,\n                            '@' as i32 as libc::c_char,\n                            '\\0' as i32 as libc::c_char,\n                        );\n                        if !userinfo_end.is_null()\n                            && *userinfo_end as libc::c_int == '@' as i32\n                        {\n                            *userinfo_end = '\\0' as i32 as libc::c_char;\n                            (*data).userinfo = p;\n                            p = userinfo_end.offset(1 as libc::c_int as isize);\n                        }\n                        if p >= p_end as *mut libc::c_char {\n                            fprintf(\n                                stderr,\n                                b\"ERROR %s Line %u! p=\\xC2\\xAB%s\\xC2\\xBB\\n\\0\" as *const u8\n                                    as *const libc::c_char,\n                                b\"/workspace/programs/url/url.c\\0\" as *const u8\n                                    as *const libc::c_char,\n                                225 as libc::c_int,\n                                p,\n                            );\n                        } else {\n                           <<chunk 0>>                           <<chunk 1>>                        }",
+        "sub_chunks": [
+          0,
+          1
+        ],
+        "live_in": [
+          "mut url: *const i8",
+          "mut p_end: *const i8",
+          "mut is_ssh: bool",
+          "mut second_slash: *mut i8",
+          "mut userinfo_end: *mut i8",
+          "mut hostname_end: *mut i8",
+          "mut path_end: *mut i8",
+          "mut has_query: bool",
+          "mut has_fragment: bool",
+          "mut current_block: u64",
+          "mut data: *mut url_data",
+          "mut p: *mut i8",
+          "is_ssh: bool"
+        ],
+        "live_out": [
+          "mut url: *const i8",
+          "mut p_end: *const i8",
+          "mut is_ssh: bool",
+          "mut second_slash: *mut i8",
+          "mut userinfo_end: *mut i8",
+          "mut hostname_end: *mut i8",
+          "mut path_end: *mut i8",
+          "mut has_query: bool",
+          "mut has_fragment: bool",
+          "mut current_block: u64",
+          "mut data: *mut url_data",
+          "mut p: *mut i8",
+          "is_ssh: bool"
+        ]
+      },
+      {
+        "chunk_id": 3,
+        "span": "src/main.rs:826:21: 1140:3 (#0)",
+        "pieces": [
+          "src/main.rs:826:21: 845:8 (#0)",
+          "src/main.rs:1126:1: 1140:3 (#0)"
+        ],
+        "num_lines": 16,
+        "source": "second_slash = p;\n                    p = p.offset(1);\n                    p;\n                    if p >= p_end as *mut libc::c_char {\n                        fprintf(\n                            stderr,\n                            b\"ERROR %s Line %u! p=\\xC2\\xAB%s\\xC2\\xBB\\n\\0\" as *const u8\n                                as *const libc::c_char,\n                            b\"/workspace/programs/url/url.c\\0\" as *const u8\n                                as *const libc::c_char,\n                            215 as libc::c_int,\n                            p,\n                        );\n                    } else {\n                       <<chunk 2>>                    }",
+        "sub_chunks": [
+          2
+        ],
+        "live_in": [
+          "mut url: *const i8",
+          "mut p_end: *const i8",
+          "mut is_ssh: bool",
+          "mut second_slash: *mut i8",
+          "mut userinfo_end: *mut i8",
+          "mut hostname_end: *mut i8",
+          "mut path_end: *mut i8",
+          "mut has_query: bool",
+          "mut has_fragment: bool",
+          "mut current_block: u64",
+          "mut data: *mut url_data",
+          "mut p: *mut i8",
+          "is_ssh: bool"
+        ],
+        "live_out": [
+          "mut url: *const i8",
+          "mut p_end: *const i8",
+          "mut is_ssh: bool",
+          "mut second_slash: *mut i8",
+          "mut userinfo_end: *mut i8",
+          "mut hostname_end: *mut i8",
+          "mut path_end: *mut i8",
+          "mut has_query: bool",
+          "mut has_fragment: bool",
+          "mut current_block: u64",
+          "mut data: *mut url_data",
+          "mut p: *mut i8",
+          "is_ssh: bool"
+        ]
+      },
+      {
+        "chunk_id": 4,
+        "span": "src/main.rs:813:17: 1142:18 (#0)",
+        "pieces": [
+          "src/main.rs:813:17: 826:20 (#0)",
+          "src/main.rs:1142:1: 1142:18 (#0)"
+        ],
+        "num_lines": 15,
+        "source": "p = p.offset(1);\n                p;\n                if p >= p_end as *mut libc::c_char || *p as libc::c_int != '/' as i32 {\n                    fprintf(\n                        stderr,\n                        b\"ERROR %s Line %u! p=\\xC2\\xAB%s\\xC2\\xBB\\n\\0\" as *const u8\n                            as *const libc::c_char,\n                        b\"/workspace/programs/url/url.c\\0\" as *const u8\n                            as *const libc::c_char,\n                        209 as libc::c_int,\n                        p,\n                    );\n                } else {\n                   <<chunk 3>>                }",
+        "sub_chunks": [
+          3
+        ],
+        "live_in": [
+          "mut url: *const i8",
+          "mut p_end: *const i8",
+          "mut is_ssh: bool",
+          "mut second_slash: *mut i8",
+          "mut userinfo_end: *mut i8",
+          "mut hostname_end: *mut i8",
+          "mut path_end: *mut i8",
+          "mut has_query: bool",
+          "mut has_fragment: bool",
+          "mut current_block: u64",
+          "mut data: *mut url_data",
+          "mut p: *mut i8",
+          "is_ssh: bool"
+        ],
+        "live_out": [
+          "mut url: *const i8",
+          "mut p_end: *const i8",
+          "mut is_ssh: bool",
+          "mut second_slash: *mut i8",
+          "mut userinfo_end: *mut i8",
+          "mut hostname_end: *mut i8",
+          "mut path_end: *mut i8",
+          "mut has_query: bool",
+          "mut has_fragment: bool",
+          "mut current_block: u64",
+          "mut data: *mut url_data",
+          "mut p: *mut i8",
+          "is_ssh: bool"
+        ]
+      },
+      {
+        "chunk_id": 5,
+        "span": "src/main.rs:793:13: 1143:14 (#0)",
+        "pieces": [
+          "src/main.rs:793:13: 813:16 (#0)",
+          "src/main.rs:1143:1: 1143:14 (#0)"
+        ],
+        "num_lines": 17,
+        "source": "*protocol_end = '\\0' as i32 as libc::c_char;\n            (*data).protocol = p;\n            is_ssh = url_is_ssh((*data).protocol);\n            p = protocol_end.offset(1 as libc::c_int as isize);\n            if p >= p_end as *mut libc::c_char || *p as libc::c_int != '/' as i32 {\n                fprintf(\n                    stderr,\n                    b\"ERROR %s Line %u! p=\\xC2\\xAB%s\\xC2\\xBB\\n\\0\" as *const u8\n                        as *const libc::c_char,\n                    b\"/workspace/programs/url/url.c\\0\" as *const u8\n                        as *const libc::c_char,\n                    205 as libc::c_int,\n                    p,\n                );\n            } else {\n               <<chunk 4>>            }",
+        "sub_chunks": [
+          4
+        ],
+        "live_in": [
+          "mut url: *const i8",
+          "mut p_end: *const i8",
+          "mut protocol_end: *mut i8",
+          "mut is_ssh: bool",
+          "mut second_slash: *mut i8",
+          "mut userinfo_end: *mut i8",
+          "mut hostname_end: *mut i8",
+          "mut path_end: *mut i8",
+          "mut has_query: bool",
+          "mut has_fragment: bool",
+          "mut current_block: u64",
+          "mut data: *mut url_data",
+          "mut p: *mut i8"
+        ],
+        "live_out": [
+          "mut url: *const i8",
+          "mut p_end: *const i8",
+          "mut protocol_end: *mut i8",
+          "mut is_ssh: bool",
+          "mut second_slash: *mut i8",
+          "mut userinfo_end: *mut i8",
+          "mut hostname_end: *mut i8",
+          "mut path_end: *mut i8",
+          "mut has_query: bool",
+          "mut has_fragment: bool",
+          "mut current_block: u64",
+          "mut data: *mut url_data",
+          "mut p: *mut i8",
+          "protocol_str: &str",
+          "is_ssh: bool"
+        ]
+      },
+      {
+        "chunk_id": 6,
+        "span": "src/main.rs:775:9: 1144:10 (#0)",
+        "pieces": [
+          "src/main.rs:775:9: 793:12 (#0)",
+          "src/main.rs:1144:1: 1144:10 (#0)"
+        ],
+        "num_lines": 20,
+        "source": "(*data).whole_url = p;\n        p_end = p.offset(strlen(p) as isize);\n        protocol_end = scan_part(\n            p,\n            Scheme,\n            ':' as i32 as libc::c_char,\n            '\\0' as i32 as libc::c_char,\n        );\n        if protocol_end.is_null() || *protocol_end as libc::c_int == '\\0' as i32 {\n            fprintf(\n                stderr,\n                b\"ERROR %s Line %u! p=\\xC2\\xAB%s\\xC2\\xBB\\n\\0\" as *const u8\n                    as *const libc::c_char,\n                b\"/workspace/programs/url/url.c\\0\" as *const u8 as *const libc::c_char,\n                197 as libc::c_int,\n                p,\n            );\n        } else {\n           <<chunk 5>>        }",
+        "sub_chunks": [
+          5
+        ],
+        "live_in": [
+          "mut url: *const i8",
+          "mut p_end: *const i8",
+          "mut protocol_end: *mut i8",
+          "mut is_ssh: bool",
+          "mut second_slash: *mut i8",
+          "mut userinfo_end: *mut i8",
+          "mut hostname_end: *mut i8",
+          "mut path_end: *mut i8",
+          "mut has_query: bool",
+          "mut has_fragment: bool",
+          "mut current_block: u64",
+          "mut data: *mut url_data",
+          "mut p: *mut i8"
+        ],
+        "live_out": [
+          "mut url: *const i8",
+          "mut p_end: *const i8",
+          "mut protocol_end: *mut i8",
+          "mut is_ssh: bool",
+          "mut second_slash: *mut i8",
+          "mut userinfo_end: *mut i8",
+          "mut hostname_end: *mut i8",
+          "mut path_end: *mut i8",
+          "mut has_query: bool",
+          "mut has_fragment: bool",
+          "mut current_block: u64",
+          "mut data: *mut url_data",
+          "mut p: *mut i8"
+        ]
+      },
+      {
+        "chunk_id": 7,
+        "span": "src/main.rs:747:5: 1151:33 (#0)",
+        "pieces": [
+          "src/main.rs:747:5: 775:8 (#0)",
+          "src/main.rs:1145:1: 1151:33 (#0)"
+        ],
+        "num_lines": 32,
+        "source": "let mut p_end: *const libc::c_char = 0 as *const libc::c_char;\n    let mut protocol_end: *mut libc::c_char = 0 as *mut libc::c_char;\n    let mut is_ssh: bool = false;\n    let mut second_slash: *mut libc::c_char = 0 as *mut libc::c_char;\n    let mut userinfo_end: *mut libc::c_char = 0 as *mut libc::c_char;\n    let mut hostname_end: *mut libc::c_char = 0 as *mut libc::c_char;\n    let mut path_end: *mut libc::c_char = 0 as *mut libc::c_char;\n    let mut has_query: bool = false;\n    let mut has_fragment: bool = false;\n    let mut current_block: u64;\n    let mut data = calloc(\n        1 as libc::c_int as libc::c_ulong,\n        ::core::mem::size_of::<url_data_t>() as libc::c_ulong,\n    ) as *mut url_data_t;\n    if data.is_null() {\n        return 0 as *mut url_data_t;\n    }\n    let mut p = strdup(url);\n    if p.is_null() {\n        fprintf(\n            stderr,\n            b\"ERROR %s Line %u! p=\\xC2\\xAB%s\\xC2\\xBB\\n\\0\" as *const u8\n                as *const libc::c_char,\n            b\"/workspace/programs/url/url.c\\0\" as *const u8 as *const libc::c_char,\n            190 as libc::c_int,\n            p,\n        );\n    } else {\n       <<chunk 6>>    }\n    url_free(data);\n    return 0 as *mut url_data_t;",
+        "sub_chunks": [
+          6
+        ],
+        "live_in": [
+          "mut url: *const i8"
+        ],
+        "live_out": [
+          "mut url: *const i8",
+          "mut p_end: *const i8",
+          "mut protocol_end: *mut i8",
+          "mut is_ssh: bool",
+          "mut second_slash: *mut i8",
+          "mut userinfo_end: *mut i8",
+          "mut hostname_end: *mut i8",
+          "mut path_end: *mut i8",
+          "mut has_query: bool",
+          "mut has_fragment: bool",
+          "mut current_block: u64",
+          "mut data: *mut url_data",
+          "mut p: *mut i8"
+        ]
+      }
+    ]
+  },
+  {
+    "func_defid": "DefId(0:64 ~ oxidate_out[187d]::url_get_host)",
+    "span": "src/main.rs:1249:1: 1270:2 (#0)",
+    "pieces": [
+      "src/main.rs:1249:1: 1270:2 (#0)"
+    ],
+    "sub_chunks": [],
+    "num_lines": 12,
+    "source": "pub unsafe extern \"C\" fn url_get_host(\n    mut url: *const libc::c_char,\n) -> *mut libc::c_char {\n    let mut data = url_parse(url);\n    let mut out = if !data.is_null() && !((*data).host).is_null() {\n        strdup((*data).host)\n    } else {\n        0 as *mut libc::c_char\n    };\n    url_free(data);\n    return out;\n}",
+    "calls": [],
+    "globals": [],
+    "imports": [
+      {
+        "span": "src/main.rs:20:1: 20:26 (#0)",
+        "source": "use std::os::raw::c_char;"
+      },
+      {
+        "span": "src/main.rs:25:22: 25:29 (#0)",
+        "source": "CString"
+      },
+      {
+        "span": "src/main.rs:24:1: 24:12 (#0)",
+        "source": "use ::libc;"
+      },
+      {
+        "span": "src/main.rs:22:1: 22:14 (#0)",
+        "source": "use std::ptr;"
+      },
+      {
+        "span": "src/main.rs:25:1: 25:31 (#0)",
+        "source": "use std::ffi::{CStr, CString};"
+      },
+      {
+        "span": "src/main.rs:19:1: 19:22 (#0)",
+        "source": "use std::borrow::Cow;"
+      },
+      {
+        "span": "src/main.rs:25:16: 25:20 (#0)",
+        "source": "CStr"
+      }
+    ],
+    "chunks": []
+  },
+  {
+    "func_defid": "DefId(0:58 ~ oxidate_out[187d]::url_is_protocol)",
+    "span": "src/main.rs:1154:1: 1167:2 (#0)",
+    "pieces": [
+      "src/main.rs:1154:1: 1167:2 (#0)"
+    ],
+    "sub_chunks": [],
+    "num_lines": 14,
+    "source": "pub unsafe extern \"C\" fn url_is_protocol(mut str: *const libc::c_char) -> bool {\n    let count = (::core::mem::size_of::<[*const libc::c_char; 177]>() as libc::c_ulong)\n        .wrapping_div(::core::mem::size_of::<*const libc::c_char>() as libc::c_ulong)\n        as libc::c_uint;\n    let mut i = 0 as libc::c_int as libc::c_uint;\n    while i < count {\n        if 0 as libc::c_int == strcmp(URL_SCHEMES[i as usize], str) {\n            return 1 as libc::c_int != 0;\n        }\n        i = i.wrapping_add(1);\n        i;\n    }\n    return 0 as libc::c_int != 0;\n}",
+    "calls": [],
+    "globals": [],
+    "imports": [
+      {
+        "span": "src/main.rs:25:22: 25:29 (#0)",
+        "source": "CString"
+      },
+      {
+        "span": "src/main.rs:22:1: 22:14 (#0)",
+        "source": "use std::ptr;"
+      },
+      {
+        "span": "src/main.rs:19:1: 19:22 (#0)",
+        "source": "use std::borrow::Cow;"
+      },
+      {
+        "span": "src/main.rs:20:1: 20:26 (#0)",
+        "source": "use std::os::raw::c_char;"
+      },
+      {
+        "span": "src/main.rs:24:1: 24:12 (#0)",
+        "source": "use ::libc;"
+      },
+      {
+        "span": "src/main.rs:25:16: 25:20 (#0)",
+        "source": "CStr"
+      },
+      {
+        "span": "src/main.rs:25:1: 25:31 (#0)",
+        "source": "use std::ffi::{CStr, CString};"
+      }
+    ],
+    "chunks": []
+  },
+  {
+    "func_defid": "DefId(0:68 ~ oxidate_out[187d]::url_get_fragment)",
+    "span": "src/main.rs:1343:1: 1365:2 (#0)",
+    "pieces": [
+      "src/main.rs:1343:1: 1365:2 (#0)"
+    ],
+    "sub_chunks": [],
+    "num_lines": 12,
+    "source": "pub unsafe extern \"C\" fn url_get_fragment(\n    mut url: *const libc::c_char,\n) -> *mut libc::c_char {\n    let mut data = url_parse(url);\n    let mut out = if !data.is_null() && !((*data).fragment).is_null() {\n        strdup((*data).fragment)\n    } else {\n        0 as *mut libc::c_char\n    };\n    url_free(data);\n    return out;\n}",
+    "calls": [
+      {
+        "caller": "DefId(0:55 ~ oxidate_out[187d]::url_get_hash)",
+        "span": "src/main.rs:121:42: 123:2 (#0)",
+        "source": "{\n    url_get_fragment(url).unwrap_or_default()\n}"
+      }
+    ],
+    "globals": [],
+    "imports": [
+      {
+        "span": "src/main.rs:25:16: 25:20 (#0)",
+        "source": "CStr"
+      },
+      {
+        "span": "src/main.rs:22:1: 22:14 (#0)",
+        "source": "use std::ptr;"
+      },
+      {
+        "span": "src/main.rs:19:1: 19:22 (#0)",
+        "source": "use std::borrow::Cow;"
+      },
+      {
+        "span": "src/main.rs:25:1: 25:31 (#0)",
+        "source": "use std::ffi::{CStr, CString};"
+      },
+      {
+        "span": "src/main.rs:20:1: 20:26 (#0)",
+        "source": "use std::os::raw::c_char;"
+      },
+      {
+        "span": "src/main.rs:25:22: 25:29 (#0)",
+        "source": "CString"
+      },
+      {
+        "span": "src/main.rs:24:1: 24:12 (#0)",
+        "source": "use ::libc;"
+      }
+    ],
+    "chunks": []
+  },
+  {
+    "func_defid": "DefId(0:69 ~ oxidate_out[187d]::url_get_port)",
+    "span": "src/main.rs:1368:1: 1382:2 (#0)",
+    "pieces": [
+      "src/main.rs:1368:1: 1382:2 (#0)"
+    ],
+    "sub_chunks": [],
+    "num_lines": 12,
+    "source": "pub unsafe extern \"C\" fn url_get_port(\n    mut url: *const libc::c_char,\n) -> *mut libc::c_char {\n    let mut data = url_parse(url);\n    let mut out = if !data.is_null() && !((*data).port).is_null() {\n        strdup((*data).port)\n    } else {\n        0 as *mut libc::c_char\n    };\n    url_free(data);\n    return out;\n}",
+    "calls": [],
+    "globals": [],
+    "imports": [
+      {
+        "span": "src/main.rs:19:1: 19:22 (#0)",
+        "source": "use std::borrow::Cow;"
+      },
+      {
+        "span": "src/main.rs:25:1: 25:31 (#0)",
+        "source": "use std::ffi::{CStr, CString};"
+      },
+      {
+        "span": "src/main.rs:25:22: 25:29 (#0)",
+        "source": "CString"
+      },
+      {
+        "span": "src/main.rs:24:1: 24:12 (#0)",
+        "source": "use ::libc;"
+      },
+      {
+        "span": "src/main.rs:20:1: 20:26 (#0)",
+        "source": "use std::os::raw::c_char;"
+      },
+      {
+        "span": "src/main.rs:22:1: 22:14 (#0)",
+        "source": "use std::ptr;"
+      },
+      {
+        "span": "src/main.rs:25:16: 25:20 (#0)",
+        "source": "CStr"
+      }
+    ],
+    "chunks": []
+  },
+  {
+    "func_defid": "DefId(0:61 ~ oxidate_out[187d]::url_get_scheme)",
+    "span": "src/main.rs:1174:1: 1190:2 (#0)",
+    "pieces": [
+      "src/main.rs:1174:1: 1190:2 (#0)"
+    ],
+    "sub_chunks": [],
+    "num_lines": 14,
+    "source": "pub unsafe extern \"C\" fn url_get_scheme(\n    mut url: *const libc::c_char,\n) -> *mut libc::c_char {\n    let mut protocol = malloc(32 as libc::c_int as libc::c_ulong) as *mut libc::c_char;\n    if protocol.is_null() {\n        return 0 as *mut libc::c_char;\n    }\n    sscanf(url, b\"%[^://]\\0\" as *const u8 as *const libc::c_char, protocol);\n    if url_is_protocol(protocol) {\n        return protocol;\n    }\n    free(protocol as *mut libc::c_void);\n    return 0 as *mut libc::c_char;\n}",
+    "calls": [
+      {
+        "caller": "DefId(0:54 ~ oxidate_out[187d]::url_get_protocol)",
+        "span": "src/main.rs:116:46: 118:2 (#0)",
+        "source": "{\n    url_get_scheme(url).unwrap_or_default()\n}"
+      }
+    ],
+    "globals": [],
+    "imports": [
+      {
+        "span": "src/main.rs:25:22: 25:29 (#0)",
+        "source": "CString"
+      },
+      {
+        "span": "src/main.rs:19:1: 19:22 (#0)",
+        "source": "use std::borrow::Cow;"
+      },
+      {
+        "span": "src/main.rs:22:1: 22:14 (#0)",
+        "source": "use std::ptr;"
+      },
+      {
+        "span": "src/main.rs:24:1: 24:12 (#0)",
+        "source": "use ::libc;"
+      },
+      {
+        "span": "src/main.rs:20:1: 20:26 (#0)",
+        "source": "use std::os::raw::c_char;"
+      },
+      {
+        "span": "src/main.rs:25:1: 25:31 (#0)",
+        "source": "use std::ffi::{CStr, CString};"
+      },
+      {
+        "span": "src/main.rs:25:16: 25:20 (#0)",
+        "source": "CStr"
+      }
+    ],
+    "chunks": []
+  },
+  {
+    "func_defid": "DefId(0:45 ~ oxidate_out[187d]::url_get_protocol)",
+    "span": "src/main.rs:116:1: 118:2 (#0)",
+    "pieces": [
+      "src/main.rs:116:1: 118:2 (#0)"
+    ],
+    "sub_chunks": [],
+    "num_lines": 5,
+    "source": "unsafe extern \"C\" fn url_get_protocol(\n    mut url: *const libc::c_char,\n) -> *mut libc::c_char {\n    return url_get_scheme(url);\n}",
+    "calls": [],
+    "globals": [],
+    "imports": [
+      {
+        "span": "src/main.rs:20:1: 20:26 (#0)",
+        "source": "use std::os::raw::c_char;"
+      },
+      {
+        "span": "src/main.rs:25:22: 25:29 (#0)",
+        "source": "CString"
+      },
+      {
+        "span": "src/main.rs:25:16: 25:20 (#0)",
+        "source": "CStr"
+      },
+      {
+        "span": "src/main.rs:19:1: 19:22 (#0)",
+        "source": "use std::borrow::Cow;"
+      },
+      {
+        "span": "src/main.rs:25:1: 25:31 (#0)",
+        "source": "use std::ffi::{CStr, CString};"
+      },
+      {
+        "span": "src/main.rs:22:1: 22:14 (#0)",
+        "source": "use std::ptr;"
+      },
+      {
+        "span": "src/main.rs:24:1: 24:12 (#0)",
+        "source": "use ::libc;"
+      }
+    ],
+    "chunks": []
+  },
+  {
+    "func_defid": "DefId(0:46 ~ oxidate_out[187d]::url_get_hash)",
+    "span": "src/main.rs:121:1: 123:2 (#0)",
+    "pieces": [
+      "src/main.rs:121:1: 123:2 (#0)"
+    ],
+    "sub_chunks": [],
+    "num_lines": 3,
+    "source": "unsafe extern \"C\" fn url_get_hash(mut url: *const libc::c_char) -> *mut libc::c_char {\n    return url_get_fragment(url);\n}",
+    "calls": [],
+    "globals": [],
+    "imports": [
+      {
+        "span": "src/main.rs:25:16: 25:20 (#0)",
+        "source": "CStr"
+      },
+      {
+        "span": "src/main.rs:19:1: 19:22 (#0)",
+        "source": "use std::borrow::Cow;"
+      },
+      {
+        "span": "src/main.rs:20:1: 20:26 (#0)",
+        "source": "use std::os::raw::c_char;"
+      },
+      {
+        "span": "src/main.rs:25:22: 25:29 (#0)",
+        "source": "CString"
+      },
+      {
+        "span": "src/main.rs:24:1: 24:12 (#0)",
+        "source": "use ::libc;"
+      },
+      {
+        "span": "src/main.rs:22:1: 22:14 (#0)",
+        "source": "use std::ptr;"
+      },
+      {
+        "span": "src/main.rs:25:1: 25:31 (#0)",
+        "source": "use std::ffi::{CStr, CString};"
+      }
+    ],
+    "chunks": []
+  },
+  {
+    "func_defid": "DefId(0:62 ~ oxidate_out[187d]::url_get_userinfo)",
+    "span": "src/main.rs:1193:1: 1217:2 (#0)",
+    "pieces": [
+      "src/main.rs:1193:1: 1217:2 (#0)"
+    ],
+    "sub_chunks": [],
+    "num_lines": 12,
+    "source": "pub unsafe extern \"C\" fn url_get_userinfo(\n    mut url: *const libc::c_char,\n) -> *mut libc::c_char {\n    let mut data = url_parse(url);\n    let mut out = if !data.is_null() && !((*data).userinfo).is_null() {\n        strdup((*data).userinfo)\n    } else {\n        0 as *mut libc::c_char\n    };\n    url_free(data);\n    return out;\n}",
+    "calls": [],
+    "globals": [],
+    "imports": [
+      {
+        "span": "src/main.rs:25:1: 25:31 (#0)",
+        "source": "use std::ffi::{CStr, CString};"
+      },
+      {
+        "span": "src/main.rs:25:16: 25:20 (#0)",
+        "source": "CStr"
+      },
+      {
+        "span": "src/main.rs:25:22: 25:29 (#0)",
+        "source": "CString"
+      },
+      {
+        "span": "src/main.rs:19:1: 19:22 (#0)",
+        "source": "use std::borrow::Cow;"
+      },
+      {
+        "span": "src/main.rs:20:1: 20:26 (#0)",
+        "source": "use std::os::raw::c_char;"
+      },
+      {
+        "span": "src/main.rs:24:1: 24:12 (#0)",
+        "source": "use ::libc;"
+      },
+      {
+        "span": "src/main.rs:22:1: 22:14 (#0)",
+        "source": "use std::ptr;"
+      }
+    ],
+    "chunks": []
+  },
+  {
+    "func_defid": "DefId(0:67 ~ oxidate_out[187d]::url_get_query_value)",
+    "span": "src/main.rs:1321:1: 1340:2 (#0)",
+    "pieces": [
+      "src/main.rs:1321:1: 1340:2 (#0)"
+    ],
+    "sub_chunks": [],
+    "num_lines": 17,
+    "source": "pub unsafe extern \"C\" fn url_get_query_value(\n    mut url: *const url_data_t,\n    mut key: *const libc::c_char,\n) -> *const libc::c_char {\n    if ((*url).query).is_null() {\n        return 0 as *const libc::c_char;\n    }\n    let mut kv = (*url).query;\n    while !((*kv).key).is_null() {\n        if strcmp((*kv).key, key) == 0 as libc::c_int {\n            return (*kv).value;\n        }\n        kv = kv.offset(1);\n        kv;\n    }\n    return 0 as *const libc::c_char;\n}",
+    "calls": [],
+    "globals": [],
+    "imports": [
+      {
+        "span": "src/main.rs:22:1: 22:14 (#0)",
+        "source": "use std::ptr;"
+      },
+      {
+        "span": "src/main.rs:19:1: 19:22 (#0)",
+        "source": "use std::borrow::Cow;"
+      },
+      {
+        "span": "src/main.rs:20:1: 20:26 (#0)",
+        "source": "use std::os::raw::c_char;"
+      },
+      {
+        "span": "src/main.rs:25:1: 25:31 (#0)",
+        "source": "use std::ffi::{CStr, CString};"
+      },
+      {
+        "span": "src/main.rs:25:22: 25:29 (#0)",
+        "source": "CString"
+      },
+      {
+        "span": "src/main.rs:24:1: 24:12 (#0)",
+        "source": "use ::libc;"
+      },
+      {
+        "span": "src/main.rs:25:16: 25:20 (#0)",
+        "source": "CStr"
+      }
+    ],
+    "chunks": []
+  },
+  {
+    "func_defid": "DefId(0:63 ~ oxidate_out[187d]::url_get_hostname)",
+    "span": "src/main.rs:1220:1: 1246:2 (#0)",
+    "pieces": [
+      "src/main.rs:1220:1: 1246:2 (#0)"
+    ],
+    "sub_chunks": [],
+    "num_lines": 12,
+    "source": "pub unsafe extern \"C\" fn url_get_hostname(\n    mut url: *const libc::c_char,\n) -> *mut libc::c_char {\n    let mut data = url_parse(url);\n    let mut out = if !data.is_null() && !((*data).host).is_null() {\n        strdup((*data).host)\n    } else {\n        0 as *mut libc::c_char\n    };\n    url_free(data);\n    return out;\n}",
+    "calls": [],
+    "globals": [],
+    "imports": [
+      {
+        "span": "src/main.rs:22:1: 22:14 (#0)",
+        "source": "use std::ptr;"
+      },
+      {
+        "span": "src/main.rs:25:1: 25:31 (#0)",
+        "source": "use std::ffi::{CStr, CString};"
+      },
+      {
+        "span": "src/main.rs:25:22: 25:29 (#0)",
+        "source": "CString"
+      },
+      {
+        "span": "src/main.rs:20:1: 20:26 (#0)",
+        "source": "use std::os::raw::c_char;"
+      },
+      {
+        "span": "src/main.rs:24:1: 24:12 (#0)",
+        "source": "use ::libc;"
+      },
+      {
+        "span": "src/main.rs:19:1: 19:22 (#0)",
+        "source": "use std::borrow::Cow;"
+      },
+      {
+        "span": "src/main.rs:25:16: 25:20 (#0)",
+        "source": "CStr"
+      }
+    ],
+    "chunks": []
+  },
+  {
+    "func_defid": "DefId(0:52 ~ oxidate_out[187d]::unhex)",
+    "span": "src/main.rs:571:1: 588:2 (#0)",
+    "pieces": [
+      "src/main.rs:571:1: 588:2 (#0)"
+    ],
+    "sub_chunks": [],
+    "num_lines": 12,
+    "source": "unsafe extern \"C\" fn unhex(mut s: *const libc::c_char) -> libc::c_int {\n    if *s as libc::c_int >= '0' as i32 && *s as libc::c_int <= '9' as i32 {\n        return *s as libc::c_int - '0' as i32;\n    }\n    if *s as libc::c_int >= 'A' as i32 && *s as libc::c_int <= 'F' as i32 {\n        return *s as libc::c_int - 'A' as i32 + 10 as libc::c_int;\n    }\n    if *s as libc::c_int >= 'a' as i32 && *s as libc::c_int <= 'f' as i32 {\n        return *s as libc::c_int - 'a' as i32 + 10 as libc::c_int;\n    }\n    return -(1 as libc::c_int);\n}",
+    "calls": [],
+    "globals": [],
+    "imports": [
+      {
+        "span": "src/main.rs:25:1: 25:31 (#0)",
+        "source": "use std::ffi::{CStr, CString};"
+      },
+      {
+        "span": "src/main.rs:25:16: 25:20 (#0)",
+        "source": "CStr"
+      },
+      {
+        "span": "src/main.rs:25:22: 25:29 (#0)",
+        "source": "CString"
+      },
+      {
+        "span": "src/main.rs:19:1: 19:22 (#0)",
+        "source": "use std::borrow::Cow;"
+      },
+      {
+        "span": "src/main.rs:20:1: 20:26 (#0)",
+        "source": "use std::os::raw::c_char;"
+      },
+      {
+        "span": "src/main.rs:22:1: 22:14 (#0)",
+        "source": "use std::ptr;"
+      },
+      {
+        "span": "src/main.rs:24:1: 24:12 (#0)",
+        "source": "use ::libc;"
+      }
+    ],
+    "chunks": []
+  },
+  {
+    "func_defid": "DefId(0:71 ~ oxidate_out[187d]::url_data_inspect)",
+    "span": "src/main.rs:1398:1: 1480:2 (#0)",
+    "pieces": [
+      "src/main.rs:1398:1: 1480:2 (#0)"
+    ],
+    "sub_chunks": [],
+    "num_lines": 79,
+    "source": "pub unsafe extern \"C\" fn url_data_inspect(mut data: *const url_data_t) {\n    printf(b\"#url =>\\n\\0\" as *const u8 as *const libc::c_char);\n    if !((*data).protocol).is_null() {\n        printf(\n            b\"    .protocol: \\\"%s\\\"\\n\\0\" as *const u8 as *const libc::c_char,\n            (*data).protocol,\n        );\n    } else {\n        printf(b\"    .protocol: (NULL)\\n\\0\" as *const u8 as *const libc::c_char);\n    }\n    if !((*data).host).is_null() {\n        printf(\n            b\"    .host: \\\"%s\\\"\\n\\0\" as *const u8 as *const libc::c_char,\n            (*data).host,\n        );\n    } else {\n        printf(b\"    .host: (NULL)\\n\\0\" as *const u8 as *const libc::c_char);\n    }\n    if !((*data).userinfo).is_null() {\n        printf(\n            b\"    .userinfo: \\\"%s\\\"\\n\\0\" as *const u8 as *const libc::c_char,\n            (*data).userinfo,\n        );\n    } else {\n        printf(b\"    .userinfo: (NULL)\\n\\0\" as *const u8 as *const libc::c_char);\n    }\n    if !((*data).host).is_null() {\n        printf(\n            b\"    .host: \\\"%s\\\"\\n\\0\" as *const u8 as *const libc::c_char,\n            (*data).host,\n        );\n    } else {\n        printf(b\"    .host: (NULL)\\n\\0\" as *const u8 as *const libc::c_char);\n    }\n    if !((*data).port).is_null() {\n        printf(\n            b\"    .port: \\\"%s\\\"\\n\\0\" as *const u8 as *const libc::c_char,\n            (*data).port,\n        );\n    } else {\n        printf(b\"    .port: (NULL)\\n\\0\" as *const u8 as *const libc::c_char);\n    }\n    if !((*data).path).is_null() {\n        printf(\n            b\"    .path: \\\"%s\\\"\\n\\0\" as *const u8 as *const libc::c_char,\n            (*data).path,\n        );\n    } else {\n        printf(b\"    .path: (NULL)\\n\\0\" as *const u8 as *const libc::c_char);\n    }\n    if !((*data).query).is_null() {\n        let mut nr = 0 as libc::c_int as libc::c_uint;\n        while !((*((*data).query).offset(nr as isize)).key).is_null() {\n            printf(\n                b\"    .query[%u]: \\\"%s\\\" -> \\0\" as *const u8 as *const libc::c_char,\n                nr,\n                (*((*data).query).offset(nr as isize)).key,\n            );\n            if !((*((*data).query).offset(nr as isize)).value).is_null() {\n                printf(\n                    b\"\\\"%s\\\"\\n\\0\" as *const u8 as *const libc::c_char,\n                    (*((*data).query).offset(nr as isize)).value,\n                );\n            } else {\n                printf(b\"(NULL)\\n\\0\" as *const u8 as *const libc::c_char);\n            }\n            nr = nr.wrapping_add(1);\n            nr;\n        }\n    }\n    if !((*data).fragment).is_null() {\n        printf(\n            b\"    .fragment: \\\"%s\\\"\\n\\0\" as *const u8 as *const libc::c_char,\n            (*data).fragment,\n        );\n    } else {\n        printf(b\"    .fragment: (NULL)\\n\\0\" as *const u8 as *const libc::c_char);\n    };\n}",
+    "calls": [
+      {
+        "caller": "DefId(0:87 ~ oxidate_out[187d]::safe_url_inspect)",
+        "span": "src/main.rs:1506:9: 1506:36 (#0)",
+        "source": "url_data_inspect(url_data);"
+      },
+      {
+        "caller": "DefId(0:81 ~ oxidate_out[187d]::url_inspect)",
+        "span": "src/main.rs:1394:5: 1394:32 (#0)",
+        "source": "url_data_inspect(data_ref);"
+      }
+    ],
+    "globals": [],
+    "imports": [
+      {
+        "span": "src/main.rs:19:1: 19:22 (#0)",
+        "source": "use std::borrow::Cow;"
+      },
+      {
+        "span": "src/main.rs:25:22: 25:29 (#0)",
+        "source": "CString"
+      },
+      {
+        "span": "src/main.rs:24:1: 24:12 (#0)",
+        "source": "use ::libc;"
+      },
+      {
+        "span": "src/main.rs:22:1: 22:14 (#0)",
+        "source": "use std::ptr;"
+      },
+      {
+        "span": "src/main.rs:25:1: 25:31 (#0)",
+        "source": "use std::ffi::{CStr, CString};"
+      },
+      {
+        "span": "src/main.rs:25:16: 25:20 (#0)",
+        "source": "CStr"
+      },
+      {
+        "span": "src/main.rs:20:1: 20:26 (#0)",
+        "source": "use std::os::raw::c_char;"
+      }
+    ],
+    "chunks": []
+  },
+  {
+    "func_defid": "DefId(0:70 ~ oxidate_out[187d]::url_inspect)",
+    "span": "src/main.rs:1385:1: 1395:2 (#0)",
+    "pieces": [
+      "src/main.rs:1385:1: 1395:2 (#0)"
+    ],
+    "sub_chunks": [],
+    "num_lines": 3,
+    "source": "pub unsafe extern \"C\" fn url_inspect(mut url: *const libc::c_char) {\n    url_data_inspect(url_parse(url));\n}",
+    "calls": [],
+    "globals": [],
+    "imports": [
+      {
+        "span": "src/main.rs:20:1: 20:26 (#0)",
+        "source": "use std::os::raw::c_char;"
+      },
+      {
+        "span": "src/main.rs:24:1: 24:12 (#0)",
+        "source": "use ::libc;"
+      },
+      {
+        "span": "src/main.rs:25:1: 25:31 (#0)",
+        "source": "use std::ffi::{CStr, CString};"
+      },
+      {
+        "span": "src/main.rs:25:16: 25:20 (#0)",
+        "source": "CStr"
+      },
+      {
+        "span": "src/main.rs:25:22: 25:29 (#0)",
+        "source": "CString"
+      },
+      {
+        "span": "src/main.rs:19:1: 19:22 (#0)",
+        "source": "use std::borrow::Cow;"
+      },
+      {
+        "span": "src/main.rs:22:1: 22:14 (#0)",
+        "source": "use std::ptr;"
+      }
+    ],
+    "chunks": []
+  },
+  {
+    "func_defid": "DefId(0:66 ~ oxidate_out[187d]::url_get_path)",
+    "span": "src/main.rs:1297:1: 1318:2 (#0)",
+    "pieces": [
+      "src/main.rs:1297:1: 1318:2 (#0)"
+    ],
+    "sub_chunks": [],
+    "num_lines": 12,
+    "source": "pub unsafe extern \"C\" fn url_get_path(\n    mut url: *const libc::c_char,\n) -> *mut libc::c_char {\n    let mut data = url_parse(url);\n    let mut out = if !data.is_null() && !((*data).path).is_null() {\n        strdup((*data).path)\n    } else {\n        0 as *mut libc::c_char\n    };\n    url_free(data);\n    return out;\n}",
+    "calls": [],
+    "globals": [],
+    "imports": [
+      {
+        "span": "src/main.rs:25:16: 25:20 (#0)",
+        "source": "CStr"
+      },
+      {
+        "span": "src/main.rs:19:1: 19:22 (#0)",
+        "source": "use std::borrow::Cow;"
+      },
+      {
+        "span": "src/main.rs:22:1: 22:14 (#0)",
+        "source": "use std::ptr;"
+      },
+      {
+        "span": "src/main.rs:25:1: 25:31 (#0)",
+        "source": "use std::ffi::{CStr, CString};"
+      },
+      {
+        "span": "src/main.rs:25:22: 25:29 (#0)",
+        "source": "CString"
+      },
+      {
+        "span": "src/main.rs:20:1: 20:26 (#0)",
+        "source": "use std::os::raw::c_char;"
+      },
+      {
+        "span": "src/main.rs:24:1: 24:12 (#0)",
+        "source": "use ::libc;"
+      }
+    ],
+    "chunks": []
+  },
+  {
+    "func_defid": "DefId(0:65 ~ oxidate_out[187d]::url_get_pathname)",
+    "span": "src/main.rs:1273:1: 1294:2 (#0)",
+    "pieces": [
+      "src/main.rs:1273:1: 1294:2 (#0)"
+    ],
+    "sub_chunks": [],
+    "num_lines": 12,
+    "source": "pub unsafe extern \"C\" fn url_get_pathname(\n    mut url: *const libc::c_char,\n) -> *mut libc::c_char {\n    let mut data = url_parse(url);\n    let mut out = if !data.is_null() && !((*data).path).is_null() {\n        strdup((*data).path)\n    } else {\n        0 as *mut libc::c_char\n    };\n    url_free(data);\n    return out;\n}",
+    "calls": [],
+    "globals": [],
+    "imports": [
+      {
+        "span": "src/main.rs:25:16: 25:20 (#0)",
+        "source": "CStr"
+      },
+      {
+        "span": "src/main.rs:20:1: 20:26 (#0)",
+        "source": "use std::os::raw::c_char;"
+      },
+      {
+        "span": "src/main.rs:22:1: 22:14 (#0)",
+        "source": "use std::ptr;"
+      },
+      {
+        "span": "src/main.rs:19:1: 19:22 (#0)",
+        "source": "use std::borrow::Cow;"
+      },
+      {
+        "span": "src/main.rs:24:1: 24:12 (#0)",
+        "source": "use ::libc;"
+      },
+      {
+        "span": "src/main.rs:25:1: 25:31 (#0)",
+        "source": "use std::ffi::{CStr, CString};"
+      },
+      {
+        "span": "src/main.rs:25:22: 25:29 (#0)",
+        "source": "CString"
+      }
+    ],
+    "chunks": []
+  },
+  {
+    "func_defid": "DefId(0:73 ~ oxidate_out[187d]::main)",
+    "span": "src/main.rs:1491:1: 1522:2 (#0)",
+    "pieces": [
+      "src/main.rs:1491:1: 1522:2 (#0)"
+    ],
+    "sub_chunks": [],
+    "num_lines": 25,
+    "source": "fn main() {\n    // Convert Rust string to a C-compatible string\n    let url = CString::new(\"git://git@github.com:jwerle/url.h.git\").expect(\"CString conversion failed\");\n    unsafe {\n        // Call url_parse\n        let result = url_parse(url.as_ptr());\n        if !result.is_null() {\n            // Call url_data_inspect\n            url_data_inspect(unsafe { &*result });\n        } else {\n            eprintln!(\"Error: url_parse returned null.\");\n        }\n\n        \n    // Convert Rust string to a C-compatible string\n        let url2 = CString::new(\"http://user:pass@subdomain.host.com:8080/p/%C3%A5/t/h?qu%C3%ABry=strin%C4%9F&foo=bar=yuk&key%23%26%3D=%25&lol#h%C3%a6sh\").expect(\"CString conversion failed\");\n\n        let result2 = url_parse(url2.as_ptr());\n\n        if !result2.is_null() {\n            \n            url_data_inspect(unsafe { &*result2 });\n        }\n    }\n}",
+    "calls": [],
+    "globals": [],
+    "imports": [
+      {
+        "span": "src/main.rs:22:1: 22:14 (#0)",
+        "source": "use std::ptr;"
+      },
+      {
+        "span": "src/main.rs:19:1: 19:22 (#0)",
+        "source": "use std::borrow::Cow;"
+      },
+      {
+        "span": "src/main.rs:25:22: 25:29 (#0)",
+        "source": "CString"
+      },
+      {
+        "span": "src/main.rs:20:1: 20:26 (#0)",
+        "source": "use std::os::raw::c_char;"
+      },
+      {
+        "span": "src/main.rs:24:1: 24:12 (#0)",
+        "source": "use ::libc;"
+      },
+      {
+        "span": "src/main.rs:25:16: 25:20 (#0)",
+        "source": "CStr"
+      },
+      {
+        "span": "src/main.rs:25:1: 25:31 (#0)",
+        "source": "use std::ffi::{CStr, CString};"
+      }
+    ],
+    "chunks": []
+  }
+]

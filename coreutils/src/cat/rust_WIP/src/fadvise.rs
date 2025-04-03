@@ -1,3 +1,4 @@
+use std::os::unix::io::AsRawFd;
 
 use ::libc;
 extern "C" {
@@ -59,23 +60,19 @@ pub const FADVISE_NOREUSE: fadvice_t = 5;
 pub const FADVISE_SEQUENTIAL: fadvice_t = 2;
 pub const FADVISE_NORMAL: fadvice_t = 0;
 #[no_mangle]
-pub fn fdadvise(
-    fd: i32,
-    offset: i64,
-    len: i64,
-    advice: fadvice_t,
+pub unsafe extern "C" fn fdadvise(
+    mut fd: libc::c_int,
+    mut offset: off_t,
+    mut len: off_t,
+    mut advice: fadvice_t,
 ) {
+    posix_fadvise(fd, offset, len, advice as libc::c_int);
+}
+#[no_mangle]
+pub fn fadvise(fp: &mut std::fs::File, advice: fadvice_t) {
+    let fd = fp.as_raw_fd();
     unsafe {
-        posix_fadvise(fd, offset, len, advice as i32);
+        fdadvise(fd, 0, 0, advice);
     }
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn fadvise(mut fp: *mut FILE, mut advice: fadvice_t) {
-    if !fp.is_null() {
-        let fd = fileno(fp);
-let offset = 0i64;
-let len = 0i64;
-fdadvise(fd, offset, len, advice);
-    }
-}

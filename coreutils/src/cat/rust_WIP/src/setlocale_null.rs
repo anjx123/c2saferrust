@@ -1,5 +1,6 @@
-
 use std::ffi::CStr;
+
+use std::slice;
 
 use ::libc;
 extern "C" {
@@ -14,22 +15,24 @@ pub type size_t = libc::c_ulong;
 #[no_mangle]
 pub fn setlocale_null_r(
     category: libc::c_int,
-    buf: &mut [u8],
+    buf: &mut [libc::c_char],
 ) -> libc::c_int {
-    let bufsize = buf.len() as u64;
-    let buf_ptr = buf.as_mut_ptr() as *mut libc::c_char;
+    let bufsize = buf.len() as size_t;
     unsafe {
-        return setlocale_null_r_unlocked(category, buf_ptr, bufsize);
+        return setlocale_null_r_unlocked(category, buf.as_mut_ptr(), bufsize);
     }
 }
 
 #[no_mangle]
 pub fn setlocale_null(category: libc::c_int) -> Option<String> {
-    let locale = unsafe { setlocale_null_unlocked(category) };
-    if locale.is_null() {
+    // Call the unsafe function within an unsafe block
+    let locale_ptr = unsafe { setlocale_null_unlocked(category) };
+    if locale_ptr.is_null() {
         None
     } else {
-        unsafe { Some(CStr::from_ptr(locale).to_string_lossy().into_owned()) }
+        // Convert the C string to a Rust String
+        let c_str = unsafe { std::ffi::CStr::from_ptr(locale_ptr) };
+        c_str.to_str().ok().map(|s| s.to_string())
     }
 }
 

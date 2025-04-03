@@ -1,0 +1,605 @@
+DefId(0:47 ~ oxidate_out[187d]::shoco_compress)
+Chunk root
+Here is a function:
+```rust
+pub unsafe extern "C" fn shoco_compress(
+    original: *const libc::c_char,
+    mut strlen: size_t,
+    out: *mut libc::c_char,
+    mut bufsize: size_t,
+) -> size_t {
+    let mut o = out;
+    let out_end = out.offset(bufsize as isize);
+    let mut in_0 = original;
+    let mut indices: [int16_t; 8] = [0 as libc::c_int as int16_t, 0, 0, 0, 0, 0, 0, 0];
+    let mut last_chr_index: libc::c_int = 0;
+    let mut current_index: libc::c_int = 0;
+    let mut successor_index: libc::c_int = 0;
+    let mut n_consecutive: libc::c_uint = 0;
+    let mut code = Code { word: 0 };
+    let mut pack_n: libc::c_int = 0;
+    let mut rest: libc::c_uint = 0;
+    let in_end = original.offset(strlen as isize);
+    while *in_0 as libc::c_int != '\0' as i32 {
+        if strlen != 0 && in_0 == in_end {
+            break;
+        }
+        indices[0 as libc::c_int
+            as usize] = chr_ids_by_chr[*in_0.offset(0 as libc::c_int as isize)
+            as libc::c_uchar as usize] as int16_t;
+        last_chr_index = indices[0 as libc::c_int as usize] as libc::c_int;
+        if !(last_chr_index < 0 as libc::c_int) {
+            rest = in_end.offset_from(in_0) as libc::c_long as libc::c_uint;
+            n_consecutive = 1 as libc::c_int as libc::c_uint;
+            while n_consecutive <= 7 as libc::c_int as libc::c_uint {
+                if strlen != 0 && n_consecutive == rest {
+                    break;
+                }
+                current_index = chr_ids_by_chr[*in_0.offset(n_consecutive as isize)
+                    as libc::c_uchar as usize] as libc::c_int;
+                if current_index < 0 as libc::c_int {
+                    break;
+                }
+                successor_index = successor_ids_by_chr_id_and_chr_id[last_chr_index
+                    as usize][current_index as usize] as libc::c_int;
+                if successor_index < 0 as libc::c_int {
+                    break;
+                }
+                indices[n_consecutive as usize] = successor_index as int16_t;
+                last_chr_index = current_index;
+                n_consecutive = n_consecutive.wrapping_add(1);
+                n_consecutive;
+            }
+            if !(n_consecutive < 2 as libc::c_int as libc::c_uint) {
+                pack_n = find_best_encoding(indices.as_mut_ptr(), n_consecutive);
+                if pack_n >= 0 as libc::c_int {
+                    if o.offset(packs[pack_n as usize].bytes_packed as isize) > out_end {
+                        return bufsize.wrapping_add(1 as libc::c_int as libc::c_ulong);
+                    }
+                    code.word = packs[pack_n as usize].word;
+                    let mut i = 0 as libc::c_int as libc::c_uint;
+                    while i < packs[pack_n as usize].bytes_unpacked {
+                        code.word
+                            |= ((indices[i as usize] as libc::c_int)
+                                << packs[pack_n as usize].offsets[i as usize])
+                                as libc::c_uint;
+                        i = i.wrapping_add(1);
+                        i;
+                    }
+                    code
+                        .word = (code.word << 24 as libc::c_int)
+                        .wrapping_add(
+                            (code.word & 0xff00 as libc::c_int as libc::c_uint)
+                                << 8 as libc::c_int,
+                        )
+                        .wrapping_add(
+                            (code.word & 0xff0000 as libc::c_int as libc::c_uint)
+                                >> 8 as libc::c_int,
+                        )
+                        .wrapping_add(code.word >> 24 as libc::c_int);
+                    let mut i_0 = 0 as libc::c_int as libc::c_uint;
+                    while i_0 < packs[pack_n as usize].bytes_packed {
+                        *o.offset(i_0 as isize) = code.bytes[i_0 as usize];
+                        i_0 = i_0.wrapping_add(1);
+                        i_0;
+                    }
+                    o = o.offset(packs[pack_n as usize].bytes_packed as isize);
+                    in_0 = in_0.offset(packs[pack_n as usize].bytes_unpacked as isize);
+                    continue;
+                }
+            }
+        }
+        if *in_0 as libc::c_int & 0x80 as libc::c_int != 0 {
+            if o.offset(2 as libc::c_int as isize) > out_end {
+                return bufsize.wrapping_add(1 as libc::c_int as libc::c_ulong);
+            }
+            let fresh0 = o;
+            o = o.offset(1);
+            *fresh0 = 0 as libc::c_int as libc::c_char;
+        } else if o.offset(1 as libc::c_int as isize) > out_end {
+            return bufsize.wrapping_add(1 as libc::c_int as libc::c_ulong)
+        }
+        let fresh1 = in_0;
+        in_0 = in_0.offset(1);
+        let fresh2 = o;
+        o = o.offset(1);
+        *fresh2 = *fresh1;
+    }
+    return o.offset_from(out) as libc::c_long as size_t;
+}
+```
+
+
+The file contains the following imports:
+```rust
+_mm_setzero_si128
+```
+```rust
+use ::libc;
+```
+```rust
+_mm_movemask_epi8
+```
+```rust
+_mm_and_si128
+```
+```rust
+pub use core::arch::x86_64::{
+    __m128i, _mm_and_si128, _mm_cmpgt_epi16, _mm_load_si128, _mm_setzero_si128,
+    _mm_movemask_epi8,
+};
+```
+```rust
+_mm_cmpgt_epi16
+```
+```rust
+__m128i
+```
+```rust
+_mm_load_si128
+```
+Convert the function to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible. Do not change the function name.
+
+Follow the following format for your output: Place the function translation between the tags <FUNC> and </FUNC>. 
+
+
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:49 ~ oxidate_out[187d]::shoco_decompress)
+Chunk root
+Here is a function:
+```rust
+pub unsafe extern "C" fn shoco_decompress(
+    original: *const libc::c_char,
+    mut complen: size_t,
+    out: *mut libc::c_char,
+    mut bufsize: size_t,
+) -> size_t {
+    let mut o = out;
+    let out_end = out.offset(bufsize as isize);
+    let mut in_0 = original;
+    let mut last_chr: libc::c_char = 0;
+    let mut code = Code {
+        word: 0 as libc::c_int as uint32_t,
+    };
+    let mut offset: libc::c_int = 0;
+    let mut mask: libc::c_int = 0;
+    let mut mark: libc::c_int = 0;
+    let in_end = original.offset(complen as isize);
+    while in_0 < in_end {
+        mark = decode_header(*in_0 as libc::c_uchar);
+        if mark < 0 as libc::c_int {
+            if o >= out_end {
+                return bufsize.wrapping_add(1 as libc::c_int as libc::c_ulong);
+            }
+            if *in_0 as libc::c_int == 0 as libc::c_int {
+                in_0 = in_0.offset(1);
+                if in_0 >= in_end {
+                    return 18446744073709551615 as libc::c_ulong;
+                }
+            }
+            let fresh3 = in_0;
+            in_0 = in_0.offset(1);
+            let fresh4 = o;
+            o = o.offset(1);
+            *fresh4 = *fresh3;
+        } else {
+            if o.offset(packs[mark as usize].bytes_unpacked as isize) > out_end {
+                return bufsize.wrapping_add(1 as libc::c_int as libc::c_ulong)
+            } else if in_0.offset(packs[mark as usize].bytes_packed as isize) > in_end {
+                return 18446744073709551615 as libc::c_ulong
+            }
+            let mut i = 0 as libc::c_int as libc::c_uint;
+            while i < packs[mark as usize].bytes_packed {
+                code.bytes[i as usize] = *in_0.offset(i as isize);
+                i = i.wrapping_add(1);
+                i;
+            }
+            code
+                .word = (code.word << 24 as libc::c_int)
+                .wrapping_add(
+                    (code.word & 0xff00 as libc::c_int as libc::c_uint)
+                        << 8 as libc::c_int,
+                )
+                .wrapping_add(
+                    (code.word & 0xff0000 as libc::c_int as libc::c_uint)
+                        >> 8 as libc::c_int,
+                )
+                .wrapping_add(code.word >> 24 as libc::c_int);
+            offset = packs[mark as usize].offsets[0 as libc::c_int as usize]
+                as libc::c_int;
+            mask = packs[mark as usize].masks[0 as libc::c_int as usize] as libc::c_int;
+            let ref mut fresh5 = *o.offset(0 as libc::c_int as isize);
+            *fresh5 = chrs_by_chr_id[(code.word >> offset & mask as libc::c_uint)
+                as usize];
+            last_chr = *fresh5;
+            let mut i_0 = 1 as libc::c_int as libc::c_uint;
+            while i_0 < packs[mark as usize].bytes_unpacked {
+                offset = packs[mark as usize].offsets[i_0 as usize] as libc::c_int;
+                mask = packs[mark as usize].masks[i_0 as usize] as libc::c_int;
+                let ref mut fresh6 = *o.offset(i_0 as isize);
+                *fresh6 = chrs_by_chr_and_successor_id[(last_chr as libc::c_uchar
+                    as libc::c_int - 39 as libc::c_int)
+                    as usize][(code.word >> offset & mask as libc::c_uint) as usize]
+                    as libc::c_char;
+                last_chr = *fresh6;
+                i_0 = i_0.wrapping_add(1);
+                i_0;
+            }
+            o = o.offset(packs[mark as usize].bytes_unpacked as isize);
+            in_0 = in_0.offset(packs[mark as usize].bytes_packed as isize);
+        }
+    }
+    if o < out_end {
+        *o = '\0' as i32 as libc::c_char;
+    }
+    return o.offset_from(out) as libc::c_long as size_t;
+}
+```
+
+
+The file contains the following imports:
+```rust
+_mm_and_si128
+```
+```rust
+_mm_cmpgt_epi16
+```
+```rust
+_mm_setzero_si128
+```
+```rust
+pub use core::arch::x86_64::{
+    __m128i, _mm_and_si128, _mm_cmpgt_epi16, _mm_load_si128, _mm_setzero_si128,
+    _mm_movemask_epi8,
+};
+```
+```rust
+__m128i
+```
+```rust
+use ::libc;
+```
+```rust
+_mm_load_si128
+```
+```rust
+_mm_movemask_epi8
+```
+```rust
+use std::convert::TryInto;
+```
+Convert the function to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible. Do not change the function name.
+
+Follow the following format for your output: Place the function translation between the tags <FUNC> and </FUNC>. 
+
+
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:46 ~ oxidate_out[187d]::find_best_encoding)
+Chunk root
+Here is a function:
+```rust
+unsafe extern "C" fn find_best_encoding(
+    mut indices: *const int16_t,
+    mut n_consecutive: libc::c_uint,
+) -> libc::c_int {
+    let mut p = 3 as libc::c_int - 1 as libc::c_int;
+    while p >= 0 as libc::c_int {
+        if n_consecutive >= packs[p as usize].bytes_unpacked
+            && check_indices(indices, p) != 0
+        {
+            return p;
+        }
+        p -= 1;
+        p;
+    }
+    return -(1 as libc::c_int);
+}
+```
+
+
+The file contains the following imports:
+```rust
+use ::libc;
+```
+```rust
+pub use core::arch::x86_64::{
+    __m128i, _mm_and_si128, _mm_cmpgt_epi16, _mm_load_si128, _mm_setzero_si128,
+    _mm_movemask_epi8,
+};
+```
+```rust
+_mm_setzero_si128
+```
+```rust
+_mm_load_si128
+```
+```rust
+_mm_movemask_epi8
+```
+```rust
+__m128i
+```
+```rust
+_mm_and_si128
+```
+```rust
+use std::convert::TryInto;
+```
+```rust
+_mm_cmpgt_epi16
+```
+Convert the function to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible. Do not change the function name.
+
+Follow the following format for your output: Place the function translation between the tags <FUNC> and </FUNC>. 
+
+
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:45 ~ oxidate_out[187d]::check_indices)
+Chunk root
+Here is a function:
+```rust
+unsafe extern "C" fn check_indices(
+    mut indices: *const int16_t,
+    mut pack_n: libc::c_int,
+) -> libc::c_int {
+    let mut zero = _mm_setzero_si128();
+    let mut indis = _mm_load_si128(indices as *mut __m128i);
+    let mut masks = _mm_load_si128(
+        (packs[pack_n as usize].masks).as_ptr() as *mut __m128i,
+    );
+    let mut cmp = _mm_cmpgt_epi16(indis, masks);
+    let mut mmask = _mm_cmpgt_epi16(masks, zero);
+    cmp = _mm_and_si128(cmp, mmask);
+    let mut result = _mm_movemask_epi8(cmp);
+    return (result == 0 as libc::c_int) as libc::c_int;
+}
+```
+
+The function uses the following global variables:
+```rust
+static mut packs: [Pack; 3] = [
+    {
+        let mut init = Pack {
+            word: 0x80000000 as libc::c_uint,
+            bytes_packed: 1.0f64 as libc::c_uint,
+            bytes_unpacked: 2 as libc::c_int as libc::c_uint,
+            offsets: [
+                26 as libc::c_int as libc::c_uint,
+                24 as libc::c_int as libc::c_uint,
+                24 as libc::c_int as libc::c_uint,
+                24 as libc::c_int as libc::c_uint,
+                24 as libc::c_int as libc::c_uint,
+                24 as libc::c_int as libc::c_uint,
+                24 as libc::c_int as libc::c_uint,
+                24 as libc::c_int as libc::c_uint,
+            ],
+            masks: [
+                15 as libc::c_int as int16_t,
+                3 as libc::c_int as int16_t,
+                0 as libc::c_int as int16_t,
+                0 as libc::c_int as int16_t,
+                0 as libc::c_int as int16_t,
+                0 as libc::c_int as int16_t,
+                0 as libc::c_int as int16_t,
+                0 as libc::c_int as int16_t,
+            ],
+            header_mask: 0xc0 as libc::c_int as libc::c_char,
+            header: 0x80 as libc::c_int as libc::c_char,
+        };
+        init
+    },
+    {
+        let mut init = Pack {
+            word: 0xc0000000 as libc::c_uint,
+            bytes_packed: 2.0f64 as libc::c_uint,
+            bytes_unpacked: 4 as libc::c_int as libc::c_uint,
+            offsets: [
+                25 as libc::c_int as libc::c_uint,
+                22 as libc::c_int as libc::c_uint,
+                19 as libc::c_int as libc::c_uint,
+                16 as libc::c_int as libc::c_uint,
+                16 as libc::c_int as libc::c_uint,
+                16 as libc::c_int as libc::c_uint,
+                16 as libc::c_int as libc::c_uint,
+                16 as libc::c_int as libc::c_uint,
+            ],
+            masks: [
+                15 as libc::c_int as int16_t,
+                7 as libc::c_int as int16_t,
+                7 as libc::c_int as int16_t,
+                7 as libc::c_int as int16_t,
+                0 as libc::c_int as int16_t,
+                0 as libc::c_int as int16_t,
+                0 as libc::c_int as int16_t,
+                0 as libc::c_int as int16_t,
+            ],
+            header_mask: 0xe0 as libc::c_int as libc::c_char,
+            header: 0xc0 as libc::c_int as libc::c_char,
+        };
+        init
+    },
+    {
+        let mut init = Pack {
+            word: 0xe0000000 as libc::c_uint,
+            bytes_packed: 4.0f64 as libc::c_uint,
+            bytes_unpacked: 8 as libc::c_int as libc::c_uint,
+            offsets: [
+                23 as libc::c_int as libc::c_uint,
+                19 as libc::c_int as libc::c_uint,
+                15 as libc::c_int as libc::c_uint,
+                11 as libc::c_int as libc::c_uint,
+                8 as libc::c_int as libc::c_uint,
+                5 as libc::c_int as libc::c_uint,
+                2 as libc::c_int as libc::c_uint,
+                0 as libc::c_int as libc::c_uint,
+            ],
+            masks: [
+                31 as libc::c_int as int16_t,
+                15 as libc::c_int as int16_t,
+                15 as libc::c_int as int16_t,
+                15 as libc::c_int as int16_t,
+                7 as libc::c_int as int16_t,
+                7 as libc::c_int as int16_t,
+                7 as libc::c_int as int16_t,
+                3 as libc::c_int as int16_t,
+            ],
+            header_mask: 0xf0 as libc::c_int as libc::c_char,
+            header: 0xe0 as libc::c_int as libc::c_char,
+        };
+        init
+    },
+];
+```
+The file contains the following imports:
+```rust
+use std::convert::TryInto;
+```
+```rust
+_mm_and_si128
+```
+```rust
+pub use core::arch::x86_64::{
+    __m128i, _mm_and_si128, _mm_cmpgt_epi16, _mm_load_si128, _mm_setzero_si128,
+    _mm_movemask_epi8,
+};
+```
+```rust
+_mm_movemask_epi8
+```
+```rust
+__m128i
+```
+```rust
+_mm_load_si128
+```
+```rust
+use ::libc;
+```
+```rust
+_mm_cmpgt_epi16
+```
+```rust
+_mm_setzero_si128
+```
+Convert the function to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible. Do not change the function name.
+
+Follow the following format for your output: Place the function translation between the tags <FUNC> and </FUNC>. 
+
+
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:44 ~ oxidate_out[187d]::decode_header)
+Chunk root
+Here is a function:
+```rust
+unsafe extern "C" fn decode_header(mut val: libc::c_uchar) -> libc::c_int {
+    let mut i = -(1 as libc::c_int);
+    while (val as libc::c_schar as libc::c_int) < 0 as libc::c_int {
+        val = ((val as libc::c_int) << 1 as libc::c_int) as libc::c_uchar;
+        i += 1;
+        i;
+    }
+    return i;
+}
+```
+
+
+The file contains the following imports:
+```rust
+use ::libc;
+```
+```rust
+use std::convert::TryInto;
+```
+```rust
+_mm_and_si128
+```
+```rust
+_mm_setzero_si128
+```
+```rust
+_mm_cmpgt_epi16
+```
+```rust
+__m128i
+```
+```rust
+_mm_movemask_epi8
+```
+```rust
+pub use core::arch::x86_64::{
+    __m128i, _mm_and_si128, _mm_cmpgt_epi16, _mm_load_si128, _mm_setzero_si128,
+    _mm_movemask_epi8,
+};
+```
+```rust
+_mm_load_si128
+```
+Convert the function to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible. Do not change the function name.
+
+Follow the following format for your output: Place the function translation between the tags <FUNC> and </FUNC>. 
+
+
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------
+DefId(0:50 ~ oxidate_out[187d]::main)
+Chunk root
+Here is a function:
+```rust
+pub fn main() {}
+```
+
+
+The file contains the following imports:
+```rust
+_mm_setzero_si128
+```
+```rust
+use std::convert::TryInto;
+```
+```rust
+_mm_movemask_epi8
+```
+```rust
+_mm_and_si128
+```
+```rust
+_mm_cmpgt_epi16
+```
+```rust
+use ::libc;
+```
+```rust
+pub use core::arch::x86_64::{
+    __m128i, _mm_and_si128, _mm_cmpgt_epi16, _mm_load_si128, _mm_setzero_si128,
+    _mm_movemask_epi8,
+};
+```
+```rust
+_mm_load_si128
+```
+```rust
+__m128i
+```
+Convert the function to idiomatic Rust, meaning Rust code that does not make use of features like unsafe, raw pointers, and the C API whenever possible. Do not change the function name.
+
+Follow the following format for your output: Place the function translation between the tags <FUNC> and </FUNC>. 
+
+
+Any functions or variables without definitions are defined elsewhere in the code. Do not attempt to redefine them or import them.
+If you are using any new functions and you need new imports for those, place them between the tags <IMPORTS> and </IMPORTS>. This should be only *new* imports. Do not include existing imports.
+DO NOT include markdown characters like "```" or "```rust" in your translation.
+----------------------------------------------------------------

@@ -1,0 +1,191 @@
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lrrrrrr}
+\clineB{2-7}{2}
+\multicolumn{1}{lV{2}}{\multirow{3}{*}{}} &
+  \multicolumn{3}{cV{2}}{Raw Pointer} &
+  \multicolumn{3}{cV{2}}{Raw Pointer}\bigstrut[t]\\
+\multicolumn{1}{lV{2}}{} &
+  \multicolumn{3}{cV{2}}{Declarations ($\nabla$)} &
+  \multicolumn{3}{cV{2}}{Deferences  ($\nabla$)} \bigstrut[b]\\ \clineB{2-7}{2}
+\multicolumn{1}{lV{2}}{} &
+  \multicolumn{1}{rV{2}}{\rotatebox{90}{Before~~}} &
+  \multicolumn{1}{rV{2}}{{\rotatebox{90}{After}}} &
+  \multicolumn{1}{cV{2}}{$\Delta\%$} &
+  \multicolumn{1}{rV{2}}{\rotatebox{90}{Before~~}} &
+  \multicolumn{1}{rV{2}}{{\rotatebox{90}{After}}} &
+  \multicolumn{1}{cV{2}}{$\Delta\%$} \bigstrut\\ \clineB{2-7}{2}
+ &
+  \multicolumn{1}{l}{} &
+  \multicolumn{1}{l}{} &
+  \multicolumn{1}{l}{} &
+  \multicolumn{1}{l}{} &
+  \multicolumn{1}{l}{} &
+  \multicolumn{1}{l}{} \bigstrut\\[-1.33em] \hlineB{2}
+\multicolumn{1}{V{2}lV{2}}{cat}
+& \multicolumn{1}{rV{2}}{336}
+& \multicolumn{1}{rV{2}}{247}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}26}
+& \multicolumn{1}{rV{2}}{540}
+& \multicolumn{1}{rV{2}}{442}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}18}
+\bigstrut\\
+\multicolumn{1}{V{2}lV{2}}{head}
+& \multicolumn{1}{rV{2}}{347}
+& \multicolumn{1}{rV{2}}{249}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}28}
+& \multicolumn{1}{rV{2}}{732}
+& \multicolumn{1}{rV{2}}{576}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}21}
+\bigstrut\\
+\multicolumn{1}{V{2}lV{2}}{pwd}
+& \multicolumn{1}{rV{2}}{300}
+& \multicolumn{1}{rV{2}}{225}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}25}
+& \multicolumn{1}{rV{2}}{511}
+& \multicolumn{1}{rV{2}}{390}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}24}
+\bigstrut\\
+\multicolumn{1}{V{2}lV{2}}{split}
+& \multicolumn{1}{rV{2}}{448}
+& \multicolumn{1}{rV{2}}{376}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}16}
+& \multicolumn{1}{rV{2}}{1062}
+& \multicolumn{1}{rV{2}}{880}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}17}
+\bigstrut\\
+\multicolumn{1}{V{2}lV{2}}{tail}
+& \multicolumn{1}{rV{2}}{686}
+& \multicolumn{1}{rV{2}}{512}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}25}
+& \multicolumn{1}{rV{2}}{1710}
+& \multicolumn{1}{rV{2}}{1316}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}23}
+\bigstrut\\
+\multicolumn{1}{V{2}lV{2}}{truncate}
+& \multicolumn{1}{rV{2}}{303}
+& \multicolumn{1}{rV{2}}{237}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}22}
+& \multicolumn{1}{rV{2}}{606}
+& \multicolumn{1}{rV{2}}{503}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}17}
+\bigstrut\\
+\multicolumn{1}{V{2}lV{2}}{uniq}
+& \multicolumn{1}{rV{2}}{422}
+& \multicolumn{1}{rV{2}}{308}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}27}
+& \multicolumn{1}{rV{2}}{649}
+& \multicolumn{1}{rV{2}}{476}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}27}
+\bigstrut\\
+\hlineB{2}
+\end{tabular}%
+}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lrrrrrrrrr}
+\clineB{2-10}{2}
+\multicolumn{1}{lV{2}}{\multirow{3}{*}{}} &
+  \multicolumn{3}{cV{2}}{Unsafe} &
+  \multicolumn{3}{cV{2}}{Unsafe} &
+  \multicolumn{3}{cV{2}}{Unsafe Call}\bigstrut[t]\\
+\multicolumn{1}{lV{2}}{} &
+  \multicolumn{3}{cV{2}}{Lines ($\nabla$)} & 
+  \multicolumn{3}{cV{2}}{Type Casts ($\nabla$)} &
+  \multicolumn{3}{cV{2}}{Expressions  ($\nabla$)} \bigstrut[b]\\ \clineB{2-10}{2}
+\multicolumn{1}{lV{2}}{} &
+  \multicolumn{1}{rV{2}}{\rotatebox{90}{Before~~}} &
+  \multicolumn{1}{rV{2}}{{\rotatebox{90}{After}}} &
+  \multicolumn{1}{cV{2}}{$\Delta\%$} &
+  \multicolumn{1}{rV{2}}{\rotatebox{90}{Before~~}} &
+  \multicolumn{1}{rV{2}}{{\rotatebox{90}{After}}} &
+  \multicolumn{1}{cV{2}}{$\Delta\%$} &
+  \multicolumn{1}{rV{2}}{\rotatebox{90}{Before~~}} &
+  \multicolumn{1}{rV{2}}{{\rotatebox{90}{After}}} &
+  \multicolumn{1}{cV{2}}{$\Delta\%$} \bigstrut\\ \clineB{2-10}{2}
+& \multicolumn{1}{l}{} &
+  \multicolumn{1}{l}{} &
+  \multicolumn{1}{l}{} &
+  \multicolumn{1}{l}{} &
+  \multicolumn{1}{l}{} &
+  \multicolumn{1}{l}{} &
+  \multicolumn{1}{l}{} &
+  \multicolumn{1}{l}{} \bigstrut\\[-1.33em] \hlineB{2}
+\multicolumn{1}{V{2}lV{2}}{cat}
+& \multicolumn{1}{rV{2}}{9321}
+& \multicolumn{1}{rV{2}}{7100}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}24}
+& \multicolumn{1}{rV{2}}{1728}
+& \multicolumn{1}{rV{2}}{1559}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}10}
+& \multicolumn{1}{rV{2}}{9321}
+& \multicolumn{1}{rV{2}}{7100}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}24}
+\bigstrut\\
+\multicolumn{1}{V{2}lV{2}}{head}
+& \multicolumn{1}{rV{2}}{10333}
+& \multicolumn{1}{rV{2}}{7838}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}24}
+& \multicolumn{1}{rV{2}}{2175}
+& \multicolumn{1}{rV{2}}{1888}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}13}
+& \multicolumn{1}{rV{2}}{10333}
+& \multicolumn{1}{rV{2}}{7838}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}24}
+\bigstrut\\
+\multicolumn{1}{V{2}lV{2}}{pwd}
+& \multicolumn{1}{rV{2}}{7450}
+& \multicolumn{1}{rV{2}}{5604}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}25}
+& \multicolumn{1}{rV{2}}{1473}
+& \multicolumn{1}{rV{2}}{1437}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}2}
+& \multicolumn{1}{rV{2}}{7450}
+& \multicolumn{1}{rV{2}}{5604}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}25}
+\bigstrut\\
+\multicolumn{1}{V{2}lV{2}}{split}
+& \multicolumn{1}{rV{2}}{17337}
+& \multicolumn{1}{rV{2}}{14052}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}19}
+& \multicolumn{1}{rV{2}}{3508}
+& \multicolumn{1}{rV{2}}{3314}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}6}
+& \multicolumn{1}{rV{2}}{17337}
+& \multicolumn{1}{rV{2}}{14052}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}19}
+\bigstrut\\
+\multicolumn{1}{V{2}lV{2}}{tail}
+& \multicolumn{1}{rV{2}}{17657}
+& \multicolumn{1}{rV{2}}{13188}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}25}
+& \multicolumn{1}{rV{2}}{3762}
+& \multicolumn{1}{rV{2}}{3505}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}7}
+& \multicolumn{1}{rV{2}}{17657}
+& \multicolumn{1}{rV{2}}{13188}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}25}
+\bigstrut\\
+\multicolumn{1}{V{2}lV{2}}{truncate}
+& \multicolumn{1}{rV{2}}{9412}
+& \multicolumn{1}{rV{2}}{7781}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}17}
+& \multicolumn{1}{rV{2}}{1731}
+& \multicolumn{1}{rV{2}}{1599}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}8}
+& \multicolumn{1}{rV{2}}{9412}
+& \multicolumn{1}{rV{2}}{7781}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}17}
+\bigstrut\\
+\multicolumn{1}{V{2}lV{2}}{uniq}
+& \multicolumn{1}{rV{2}}{10472}
+& \multicolumn{1}{rV{2}}{7440}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}29}
+& \multicolumn{1}{rV{2}}{1976}
+& \multicolumn{1}{rV{2}}{1754}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}11}
+& \multicolumn{1}{rV{2}}{10472}
+& \multicolumn{1}{rV{2}}{7440}
+& \multicolumn{1}{rV{2}}{\cellcolor{blue!12}29}
+\bigstrut\\
+\hlineB{2}
+\end{tabular}%
+}

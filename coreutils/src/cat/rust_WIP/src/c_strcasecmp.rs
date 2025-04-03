@@ -1,5 +1,5 @@
 
-use std::char;
+use std::cmp::min;
 
 use ::libc;
 #[inline]
@@ -12,17 +12,23 @@ fn c_tolower(c: i32) -> i32 {
 
 #[no_mangle]
 pub fn c_strcasecmp(s1: &str, s2: &str) -> libc::c_int {
-    let c1: Vec<_> = s1.chars().map(|c| c_tolower(c as i32) as u8 as char).collect();
-    let c2: Vec<_> = s2.chars().map(|c| c_tolower(c as i32) as u8 as char).collect();
-    
-    let len = c1.len().min(c2.len());
-    
+    let s1_bytes = s1.as_bytes();
+    let s2_bytes = s2.as_bytes();
+    let len = s1_bytes.len().min(s2_bytes.len());
+
     for i in 0..len {
-        if c1[i] != c2[i] {
-            return c1[i] as libc::c_int - c2[i] as libc::c_int;
+        let c1 = c_tolower(s1_bytes[i] as libc::c_int) as libc::c_uchar;
+        let c2 = c_tolower(s2_bytes[i] as libc::c_int) as libc::c_uchar;
+
+        if c1 == b'\0' {
+            return 0;
+        }
+
+        if c1 != c2 {
+            return c1 as libc::c_int - c2 as libc::c_int;
         }
     }
-    
-    c1.len() as libc::c_int - c2.len() as libc::c_int
+
+    s1_bytes.len() as libc::c_int - s2_bytes.len() as libc::c_int
 }
 

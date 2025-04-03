@@ -1,4 +1,4 @@
-from .openai import OpenAIGen, OpenAIEmbed
+from .openai import OpenAIGen, OpenAIEmbed, OpenAIReasoning
 from .google import GoogleGen
 from .claude import ClaudeGen
 from dotenv import load_dotenv
@@ -13,6 +13,8 @@ def get_model_from_name(name):
 
     if name == "gpt4":
         return OpenAIGen(model="gpt-4-0125-preview")
+    elif name == "o3-mini":
+        return OpenAIReasoning(model="o3-mini")
     elif name == "gpt4o":
         return OpenAIGen(model="gpt-4o-2024-05-13")
     elif name == "gpt4o-mini":
