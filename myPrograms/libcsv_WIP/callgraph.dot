@@ -1,0 +1,28 @@
+strict digraph {
+"DefId(0:58 ~ oxidate_out[187d]::csv_write2)";
+"DefId(0:56 ~ oxidate_out[187d]::csv_write)";
+"DefId(0:45 ~ oxidate_out[187d]::csv_set_term_func)";
+"DefId(0:34 ~ oxidate_out[187d]::csv_get_delim)";
+"DefId(0:60 ~ oxidate_out[187d]::main)";
+"DefId(0:39 ~ oxidate_out[187d]::csv_get_quote)";
+"DefId(0:47 ~ oxidate_out[187d]::csv_set_free_func)";
+"DefId(0:27 ~ oxidate_out[187d]::csv_get_opts)";
+"DefId(0:26 ~ oxidate_out[187d]::csv_strerror)";
+"DefId(0:33 ~ oxidate_out[187d]::csv_set_quote)";
+"DefId(0:48 ~ oxidate_out[187d]::csv_set_blk_size)";
+"DefId(0:29 ~ oxidate_out[187d]::csv_init)";
+"DefId(0:46 ~ oxidate_out[187d]::csv_set_realloc_func)";
+"DefId(0:32 ~ oxidate_out[187d]::csv_set_delim)";
+"DefId(0:21 ~ oxidate_out[187d]::csv_error)";
+"DefId(0:44 ~ oxidate_out[187d]::csv_set_space_func)";
+"DefId(0:28 ~ oxidate_out[187d]::csv_set_opts)";
+"DefId(0:59 ~ oxidate_out[187d]::csv_fwrite2)";
+"DefId(0:57 ~ oxidate_out[187d]::csv_fwrite)";
+"DefId(0:31 ~ oxidate_out[187d]::csv_fini)";
+"DefId(0:49 ~ oxidate_out[187d]::csv_get_buffer_size)";
+"DefId(0:50 ~ oxidate_out[187d]::csv_increase_buffer)";
+"DefId(0:30 ~ oxidate_out[187d]::csv_free)";
+"DefId(0:51 ~ oxidate_out[187d]::csv_parse)";
+"DefId(0:56 ~ oxidate_out[187d]::csv_write)" -> "DefId(0:58 ~ oxidate_out[187d]::csv_write2)";
+"DefId(0:57 ~ oxidate_out[187d]::csv_fwrite)" -> "DefId(0:59 ~ oxidate_out[187d]::csv_fwrite2)";
+}
