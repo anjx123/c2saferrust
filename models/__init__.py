@@ -22,7 +22,7 @@ def get_model_from_name(name):
     elif name == "gpt3":
         return OpenAIGen(model="gpt-3.5-turbo")
     elif name == "gemini":
-        return GoogleGen(model="gemini-1.0-pro")
+        return GoogleGen(model="gemini-2.5-flash-preview-04-17")
     elif name == "claude":
         return ClaudeGen(model="claude-3-opus-20240229")
     elif name == "embedding":

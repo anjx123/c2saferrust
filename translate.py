@@ -529,7 +529,7 @@ if __name__ == '__main__':
     code_dir = new_dirname
     prCyan("Now working in {}".format(code_dir))
 
-    model = get_model_from_name('o3-mini')
+    model = get_model_from_name('gemini')
 
     if args.no_chunking:
         run_slicer(code_dir, 'slices.json', max_lines=100000)
