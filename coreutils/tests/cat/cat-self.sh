@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Check that cat operates correctly when the input is the same as the output.
 
 # Copyright 2014-2024 Free Software Foundation, Inc.
