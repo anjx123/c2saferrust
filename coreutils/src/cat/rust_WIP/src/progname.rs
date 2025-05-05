@@ -1,6 +1,3 @@
-use std::ffi::CStr;
-use std::process;
-
 use ::libc;
 extern "C" {
     pub type _IO_wide_data;
@@ -59,33 +56,41 @@ pub type __off_t = libc::c_long;
 #[no_mangle]
 pub static mut program_name: *const libc::c_char = 0 as *const libc::c_char;
 #[no_mangle]
-pub fn set_program_name(argv0: *const libc::c_char) {
+pub unsafe extern "C" fn set_program_name(mut argv0: *const libc::c_char) {
+    let mut slash: *const libc::c_char = 0 as *const libc::c_char;
+    let mut base: *const libc::c_char = 0 as *const libc::c_char;
     if argv0.is_null() {
-        eprintln!("A NULL argv[0] was passed through an exec system call.");
-        std::process::abort();
+        fputs(
+            b"A NULL argv[0] was passed through an exec system call.\n\0" as *const u8
+                as *const libc::c_char,
+            stderr,
+        );
+        abort();
     }
-
-    let c_str = unsafe { std::ffi::CStr::from_ptr(argv0) };
-    let argv0_str = c_str.to_string_lossy();
-    
-    let slash = argv0_str.rfind('/').map(|index| &argv0_str[index + 1..]).unwrap_or(&argv0_str);
-    
-    if slash.len() >= 7 && slash.ends_with("/.libs/") {
-        let base = &slash[7..];
-        if base.starts_with("lt-") {
-            unsafe {
-                program_invocation_short_name = base[3..].as_ptr() as *mut libc::c_char;
-            }
-        }
-        unsafe {
-            program_name = base.as_ptr() as *const libc::c_char;
-            program_invocation_name = base.as_ptr() as *mut libc::c_char;
-        }
+    slash = strrchr(argv0, '/' as i32);
+    base = if !slash.is_null() {
+        slash.offset(1 as libc::c_int as isize)
     } else {
-        unsafe {
-            program_name = argv0;
-            program_invocation_name = argv0 as *mut libc::c_char;
+        argv0
+    };
+    if base.offset_from(argv0) as libc::c_long >= 7 as libc::c_int as libc::c_long
+        && strncmp(
+            base.offset(-(7 as libc::c_int as isize)),
+            b"/.libs/\0" as *const u8 as *const libc::c_char,
+            7 as libc::c_int as libc::c_ulong,
+        ) == 0 as libc::c_int
+    {
+        argv0 = base;
+        if strncmp(
+            base,
+            b"lt-\0" as *const u8 as *const libc::c_char,
+            3 as libc::c_int as libc::c_ulong,
+        ) == 0 as libc::c_int
+        {
+            argv0 = base.offset(3 as libc::c_int as isize);
+            program_invocation_short_name = argv0 as *mut libc::c_char;
         }
     }
+    program_name = argv0;
+    program_invocation_name = argv0 as *mut libc::c_char;
 }
-

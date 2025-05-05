@@ -1,7 +1,5 @@
 
 
-use std::ffi::VaList;
-
 use ::libc;
 extern "C" {
     fn fcntl(__fd: libc::c_int, __cmd: libc::c_int, _: ...) -> libc::c_int;
@@ -20,71 +18,142 @@ pub struct __va_list {
 }
 pub type va_list = __builtin_va_list;
 #[no_mangle]
-pub fn rpl_fcntl(
-    fd: libc::c_int,
-    action: libc::c_int,
-    args: &mut std::ffi::VaList,
+pub unsafe extern "C" fn rpl_fcntl(
+    mut fd: libc::c_int,
+    mut action: libc::c_int,
+    mut args: ...
 ) -> libc::c_int {
-    let mut result: libc::c_int = -1;
-
+    let mut arg: ::core::ffi::VaListImpl;
+    let mut result: libc::c_int = -(1 as libc::c_int);
+    arg = args.clone();
     match action {
         0 => {
-            let target: libc::c_int = unsafe { args.arg::<libc::c_int>() };
-            result = unsafe { rpl_fcntl_DUPFD(fd, target) };
+            let mut target: libc::c_int = arg.arg::<libc::c_int>();
+            let result = rpl_fcntl_DUPFD(fd, target);
         }
         1030 => {
-            let target: libc::c_int = unsafe { args.arg::<libc::c_int>() };
-            result = unsafe { rpl_fcntl_DUPFD_CLOEXEC(fd, target) };
+            let mut target_0: libc::c_int = arg.arg::<libc::c_int>();
+            result = rpl_fcntl_DUPFD_CLOEXEC(fd, target_0);
         }
         _ => {
+            let mut current_block_7: u64;
             match action {
-                1 | 3 => {
-                    result = unsafe { fcntl(fd, action) };
+                1 => {
+                    current_block_7 = 4046302689674688614;
+                }
+                3 => {
+                    current_block_7 = 4046302689674688614;
                 }
                 1025 => {
-                    let p: *mut libc::c_void = unsafe { args.arg::<*mut libc::c_void>() };
-                    result = unsafe { fcntl(fd, action, p) };
+                    current_block_7 = 6453289516101043606;
                 }
                 9 => {
-                    result = unsafe { fcntl(fd, action) };
+                    current_block_7 = 13722137258147953758;
                 }
                 1032 => {
-                    result = unsafe { fcntl(fd, action) };
+                    current_block_7 = 12766345184754617216;
                 }
                 1034 => {
-                    result = unsafe { fcntl(fd, action) };
+                    current_block_7 = 6940526744265269810;
                 }
                 11 => {
-                    result = unsafe { fcntl(fd, action) };
+                    current_block_7 = 7022052692272556539;
                 }
                 1033 => {
-                    result = unsafe { fcntl(fd, action) };
+                    current_block_7 = 8871774344836507656;
+                }
+                0 => {
+                    current_block_7 = 8871774344836507656;
+                }
+                1030 => {
+                    current_block_7 = 5351856672558463576;
+                }
+                1026 => {
+                    current_block_7 = 9332010126091029806;
                 }
                 2 => {
-                    let x: libc::c_int = unsafe { args.arg::<libc::c_int>() };
-                    result = unsafe { fcntl(fd, action, x) };
+                    current_block_7 = 17966572639739034653;
                 }
                 4 => {
-                    let x: libc::c_int = unsafe { args.arg::<libc::c_int>() };
-                    result = unsafe { fcntl(fd, action, x) };
+                    current_block_7 = 15280576717888187136;
                 }
-                8 | 1031 => {
-                    result = unsafe { fcntl(fd, action) };
+                8 => {
+                    current_block_7 = 12013198723313890981;
+                }
+                1031 => {
+                    current_block_7 = 12013198723313890981;
                 }
                 1024 | 10 => {
-                    let x: libc::c_int = unsafe { args.arg::<libc::c_int>() };
-                    result = unsafe { fcntl(fd, action, x) };
+                    current_block_7 = 14034191772621753005;
                 }
                 _ => {
-                    let p: *mut libc::c_void = unsafe { args.arg::<*mut libc::c_void>() };
-                    result = unsafe { fcntl(fd, action, p) };
+                    let mut p: *mut libc::c_void = arg.arg::<*mut libc::c_void>();
+                    result = fcntl(fd, action, p);
+                    current_block_7 = 7175849428784450219;
                 }
+            }
+            match current_block_7 {
+                4046302689674688614 => {
+                    current_block_7 = 6453289516101043606;
+                }
+                8871774344836507656 => {
+                    current_block_7 = 5351856672558463576;
+                }
+                12013198723313890981 => {
+                    current_block_7 = 14034191772621753005;
+                }
+                _ => {}
+            }
+            match current_block_7 {
+                6453289516101043606 => {
+                    current_block_7 = 13722137258147953758;
+                }
+                5351856672558463576 => {
+                    current_block_7 = 9332010126091029806;
+                }
+                _ => {}
+            }
+            match current_block_7 {
+                13722137258147953758 => {
+                    current_block_7 = 12766345184754617216;
+                }
+                9332010126091029806 => {
+                    current_block_7 = 17966572639739034653;
+                }
+                _ => {}
+            }
+            match current_block_7 {
+                12766345184754617216 => {
+                    current_block_7 = 6940526744265269810;
+                }
+                17966572639739034653 => {
+                    current_block_7 = 15280576717888187136;
+                }
+                _ => {}
+            }
+            match current_block_7 {
+                6940526744265269810 => {
+                    current_block_7 = 7022052692272556539;
+                }
+                15280576717888187136 => {
+                    current_block_7 = 14034191772621753005;
+                }
+                _ => {}
+            }
+            match current_block_7 {
+                7022052692272556539 => {
+                    result = fcntl(fd, action);
+                }
+                14034191772621753005 => {
+                    let mut x: libc::c_int = arg.arg::<libc::c_int>();
+                    result = fcntl(fd, action, x);
+                }
+                _ => {}
             }
         }
     }
-    result
+    return result;
 }
-
 fn rpl_fcntl_DUPFD(fd: i32, target: i32) -> i32 {
     unsafe {
         fcntl(fd, 0, target)

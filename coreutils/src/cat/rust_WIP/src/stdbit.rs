@@ -1,9 +1,10 @@
 
 
+use std::u64;
 
 use std::u32;
 
-use std::u64;
+use std::convert::TryInto;
 
 use std::mem;
 
@@ -37,7 +38,7 @@ pub fn __gl_stdbit_clzll(n: u64) -> i32 {
     if n != 0 {
         n.leading_zeros() as i32
     } else {
-        (8 * std::mem::size_of::<u64>() as u64) as i32
+        (8 * std::mem::size_of::<u64>() as u32) as i32
     }
 }
 

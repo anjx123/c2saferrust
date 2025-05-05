@@ -14,39 +14,43 @@ extern "C" {
 }
 #[no_mangle]
 pub fn xalloc_die() {
-    unsafe {
-        if 0 != 0 {
+    if 0 != 0 {
+        unsafe {
             error(
                 exit_failure,
                 0,
                 b"%s\0" as *const u8 as *const libc::c_char,
                 gettext(b"memory exhausted\0" as *const u8 as *const libc::c_char),
             );
-            if exit_failure != 0 {
-                unreachable!();
-            }
-        } else {
-            let errstatus = exit_failure;
+        }
+        if unsafe { exit_failure } != 0 {
+            unreachable!();
+        }
+    } else {
+        let errstatus = unsafe { exit_failure };
+        unsafe {
             error(
                 errstatus,
                 0,
                 b"%s\0" as *const u8 as *const libc::c_char,
                 gettext(b"memory exhausted\0" as *const u8 as *const libc::c_char),
             );
-            if errstatus != 0 {
-                unreachable!();
-            }
+        }
+        if errstatus != 0 {
+            unreachable!();
+        }
 
-            let errstatus = exit_failure;
+        let errstatus = unsafe { exit_failure };
+        unsafe {
             error(
                 errstatus,
                 0,
                 b"%s\0" as *const u8 as *const libc::c_char,
                 gettext(b"memory exhausted\0" as *const u8 as *const libc::c_char),
             );
-            if errstatus != 0 {
-                unreachable!();
-            }
+        }
+        if errstatus != 0 {
+            unreachable!();
         }
     }
     std::process::abort();

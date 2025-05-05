@@ -1,0 +1,6 @@
+DefId(0:47 ~ oxidate_out[187d]::shoco_compress)
+DefId(0:49 ~ oxidate_out[187d]::shoco_decompress)
+DefId(0:46 ~ oxidate_out[187d]::find_best_encoding)
+DefId(0:45 ~ oxidate_out[187d]::check_indices)
+DefId(0:44 ~ oxidate_out[187d]::decode_header)
+DefId(0:50 ~ oxidate_out[187d]::main)

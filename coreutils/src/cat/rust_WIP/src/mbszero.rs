@@ -1,5 +1,3 @@
-use std::mem;
-
 use ::libc;
 extern "C" {
     fn memset(
@@ -24,10 +22,10 @@ pub type mbstate_t = __mbstate_t;
 #[no_mangle]
 #[inline]
 #[linkage = "external"]
-pub fn mbszero(ps: &mut mbstate_t) {
-    *ps = mbstate_t {
-        __count: 0,
-        __value: unsafe { std::mem::zeroed() }, // Use zeroed to initialize __value
-    };
+pub unsafe extern "C" fn mbszero(mut ps: *mut mbstate_t) {
+    memset(
+        ps as *mut libc::c_void,
+        0 as libc::c_int,
+        ::core::mem::size_of::<mbstate_t>() as libc::c_ulong,
+    );
 }
-

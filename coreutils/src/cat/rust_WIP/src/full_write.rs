@@ -16,10 +16,7 @@ pub fn full_write(
     let mut ptr = buf.as_ptr();
 
     while count > 0 {
-        let n_rw: u64;
-        unsafe {
-            n_rw = safe_write(fd, ptr as *const libc::c_void, count.try_into().unwrap());
-        }
+        let n_rw = unsafe { safe_write(fd, ptr as *const libc::c_void, count.try_into().unwrap()) };
         if n_rw == !(0 as libc::c_int) as u64 {
             break;
         }

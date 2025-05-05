@@ -166,6 +166,15 @@ def compile(code_dir, verbose=False):
     cwd = os.getcwd()
     cmd = 'cd {} && RUSTFLAGS="-Awarnings" cargo build'.format(code_dir)
 
+
+
+    directory_path = "/mnt/c/Users/cedar/Documents/GitHub/benchmark/c2saferrust/myPrograms/url/"
+    if os.path.isdir(directory_path):
+        print("Contents of the directory:")
+        for item in os.listdir(directory_path):
+            print(item)
+    else:
+        print(f"{directory_path} does not exist or is not a directory.")
     try:
         result = subprocess.run(
                     cmd,
@@ -520,7 +529,7 @@ if __name__ == '__main__':
     code_dir = new_dirname
     prCyan("Now working in {}".format(code_dir))
 
-    model = get_model_from_name('gpt4o-mini')
+    model = get_model_from_name('o3-mini')
 
     if args.no_chunking:
         run_slicer(code_dir, 'slices.json', max_lines=100000)

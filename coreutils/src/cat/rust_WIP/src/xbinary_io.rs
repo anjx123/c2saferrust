@@ -1,15 +1,16 @@
 
 
 
-use std::os::unix::io::AsRawFd;
 
 use ::libc;
 #[no_mangle]
 #[inline]
 #[linkage = "external"]
-pub fn xset_binary_mode(fd: impl AsRawFd, mode: libc::c_int) {
-    if set_binary_mode(fd.as_raw_fd(), mode) < 0 {
-        xset_binary_mode_error();
+pub fn xset_binary_mode(fd: i32, mode: i32) {
+    unsafe {
+        if set_binary_mode(fd, mode) < 0 {
+            xset_binary_mode_error();
+        }
     }
 }
 
@@ -17,9 +18,10 @@ pub fn xset_binary_mode(fd: impl AsRawFd, mode: libc::c_int) {
 #[inline]
 #[linkage = "external"]
 pub fn xset_binary_mode_error() {
-    // Implementation of setting binary mode error goes here.
-    // This is a placeholder for the actual logic that would be used
-    // to set the binary mode error in a safe manner.
+    // Implement the functionality in a safe manner
+    // For example, if this function is meant to set the binary mode for I/O,
+    // you might want to use standard Rust I/O features instead.
+    // This is a placeholder for the actual implementation.
 }
 
 #[inline]

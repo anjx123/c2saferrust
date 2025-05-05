@@ -59,7 +59,7 @@ pub fn rpl_fclose(fp: &mut FILE) -> libc::c_int {
         return unsafe { fclose(fp) };
     }
     
-    if (!unsafe { __freading(fp) != 0 } || unsafe { lseek(fd, 0, 1) != -1 }) && unsafe { rpl_fflush(fp) != 0 } {
+    if !(unsafe { __freading(fp) != 0 } || unsafe { lseek(fd, 0, 1) == -1 }) && unsafe { rpl_fflush(fp) != 0 } {
         saved_errno = unsafe { *__errno_location() };
     }
     

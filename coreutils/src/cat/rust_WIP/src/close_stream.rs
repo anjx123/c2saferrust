@@ -48,19 +48,21 @@ pub struct _IO_FILE {
 pub type _IO_lock_t = ();
 pub type FILE = _IO_FILE;
 #[no_mangle]
-pub fn close_stream(stream: *mut _IO_FILE) -> libc::c_int {
-    let some_pending: bool = unsafe { __fpending(stream) != 0 };
-    let prev_fail: bool = unsafe { ferror_unlocked(stream) != 0 };
-    let fclose_fail: bool = unsafe { rpl_fclose(stream) != 0 };
+pub fn close_stream(stream: *mut FILE) -> libc::c_int {
+    unsafe {
+        let some_pending: bool = __fpending(stream) != 0;
+        let prev_fail: bool = ferror_unlocked(stream) != 0;
+        let fclose_fail: bool = rpl_fclose(stream) != 0;
 
-    if prev_fail
-        || (fclose_fail && (some_pending || unsafe { *__errno_location() != 9 }))
-    {
-        if !fclose_fail {
-            unsafe { *__errno_location() = 0 };
+        if prev_fail
+            || (fclose_fail && (some_pending || *__errno_location() != 9))
+        {
+            if !fclose_fail {
+                *__errno_location() = 0;
+            }
+            return -1;
         }
-        return -1;
+        return 0;
     }
-    return 0;
 }
 

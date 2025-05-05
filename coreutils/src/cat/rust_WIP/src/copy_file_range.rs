@@ -1,4 +1,4 @@
-use std::ffi::CStr;
+use std::ptr;
 
 use ::libc;
 extern "C" {
@@ -38,13 +38,10 @@ pub fn rpl_copy_file_range(
     length: size_t,
     flags: libc::c_uint,
 ) -> ssize_t {
-    thread_local! {
-        static OK: std::cell::RefCell<Option<libc::c_schar>> = std::cell::RefCell::new(None);
-    }
+    static mut ok: libc::c_schar = 0;
 
-    let ok = OK.with(|ok_ref| {
-        let mut ok_value = ok_ref.borrow_mut();
-        if ok_value.is_none() {
+    unsafe {
+        if ok == 0 {
             let mut name: utsname = utsname {
                 sysname: [0; 65],
                 nodename: [0; 65],
@@ -53,29 +50,22 @@ pub fn rpl_copy_file_range(
                 machine: [0; 65],
                 domainname: [0; 65],
             };
-            unsafe { uname(&mut name) };
-            let release = unsafe { std::ffi::CStr::from_ptr(name.release.as_ptr()) };
-            let release_str = release.to_str().unwrap_or("");
-
-            let result = if release_str.len() > 1 && release_str.chars().nth(1) != Some('.')
-                || release_str.chars().nth(0).unwrap_or('0') > '5'
-                || (release_str.chars().nth(0) == Some('5') && (release_str.chars().nth(3) != Some('.') || release_str.chars().nth(2).unwrap_or('0') < '2'))
+            uname(&mut name);
+            let p = name.release.as_ptr();
+            ok = if *p.offset(1) != '.' as i8
+                || ('5' as i8) < *p
+                || (*p == '5' as i8 && (*p.offset(3) != '.' as i8 || ('2' as i8) < *p.offset(2)))
             {
                 1
             } else {
                 -1
-            };
-            *ok_value = Some(result as libc::c_schar);
-            result
-        } else {
-            ok_value.unwrap() as libc::c_int
+            } as libc::c_schar;
         }
-    });
-
-    if ok > 0 {
-        return unsafe { copy_file_range(infd, pinoff, outfd, poutoff, length, flags) };
+        if ok > 0 {
+            return copy_file_range(infd, pinoff, outfd, poutoff, length, flags);
+        }
+        *__errno_location() = 38;
     }
-    unsafe { *__errno_location() = 38 };
     return -1;
 }
 

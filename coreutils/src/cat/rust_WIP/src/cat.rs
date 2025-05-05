@@ -1,24 +1,31 @@
-#![allow(
-    dead_code,
-    mutable_transmutes,
-    non_camel_case_types,
-    non_snake_case,
-    non_upper_case_globals,
-    unused_assignments,
-    unused_mut,
-    unused_imports
-)]
+#![allow(dead_code, mutable_transmutes, non_camel_case_types, non_snake_case, non_upper_case_globals, unused_assignments, unused_mut, unused_imports)]
 #![feature(extern_types)]
 
-use libc;
 
-use std::io;
 
-use std::ptr;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+use std::os::unix::io::AsRawFd;
+
+use std::ffi::CString;
 
 use std::io::Write;
 
-use rust::*;
+use ::rust::*;
 extern "C" {
     pub type _IO_wide_data;
     pub type _IO_codecvt;
@@ -52,10 +59,17 @@ extern "C" {
         len: size_t,
         flags: libc::c_uint,
     ) -> ssize_t;
-    fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong)
-        -> *mut libc::c_void;
+    fn memmove(
+        _: *mut libc::c_void,
+        _: *const libc::c_void,
+        _: libc::c_ulong,
+    ) -> *mut libc::c_void;
     fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
-    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: libc::c_ulong) -> libc::c_int;
+    fn strncmp(
+        _: *const libc::c_char,
+        _: *const libc::c_char,
+        _: libc::c_ulong,
+    ) -> libc::c_int;
     fn stpcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     fn free(_: *mut libc::c_void);
     fn __errno_location() -> *mut libc::c_int;
@@ -68,7 +82,10 @@ extern "C" {
     static mut Version: *const libc::c_char;
     fn open(__file: *const libc::c_char, __oflag: libc::c_int, _: ...) -> libc::c_int;
     fn rpl_fcntl(fd: libc::c_int, action: libc::c_int, _: ...) -> libc::c_int;
-    fn setlocale(__category: libc::c_int, __locale: *const libc::c_char) -> *mut libc::c_char;
+    fn setlocale(
+        __category: libc::c_int,
+        __locale: *const libc::c_char,
+    ) -> *mut libc::c_char;
     fn gettext(__msgid: *const libc::c_char) -> *mut libc::c_char;
     fn textdomain(__domainname: *const libc::c_char) -> *mut libc::c_char;
     fn bindtextdomain(
@@ -90,8 +107,13 @@ extern "C" {
     ) -> *const libc::c_char;
     static mut program_name: *const libc::c_char;
     fn set_program_name(argv0: *const libc::c_char);
-    fn error(__status: libc::c_int, __errnum: libc::c_int, __format: *const libc::c_char, _: ...);
-    fn atexit(__func: Option<unsafe extern "C" fn() -> ()>) -> libc::c_int;
+    fn error(
+        __status: libc::c_int,
+        __errnum: libc::c_int,
+        __format: *const libc::c_char,
+        _: ...
+    );
+    fn atexit(__func: Option::<unsafe extern "C" fn() -> ()>) -> libc::c_int;
     fn exit(_: libc::c_int) -> !;
     fn xalignalloc(_: idx_t, _: idx_t) -> *mut libc::c_void;
     fn fdadvise(fd: libc::c_int, offset: off_t, len: off_t, advice: fadvice_t);
@@ -225,35 +247,42 @@ fn is_ENOTSUP(err: i32) -> bool {
 #[inline]
 fn emit_stdin_note() {
     let message = "\nWith no FILE, or when FILE is -, read standard input.\n";
-    let _ = std::io::stdout().write_all(message.as_bytes());
+    let stdout_handle = std::io::stdout();
+    let mut handle = stdout_handle.lock();
+    handle.write_all(message.as_bytes()).expect("Failed to write to stdout");
 }
 
 #[inline]
 fn emit_ancillary_info(program: &str) {
-    let infomap_0: [(&str, &str); 7] = [
-        ("[", "test invocation"),
-        ("coreutils", "Multi-call invocation"),
-        ("sha224sum", "sha2 utilities"),
-        ("sha256sum", "sha2 utilities"),
-        ("sha384sum", "sha2 utilities"),
-        ("sha512sum", "sha2 utilities"),
-        ("", ""),
+    let infomap_0: [(String, String); 7] = [
+        (String::from("["),
+         String::from("test invocation")),
+        (String::from("coreutils"),
+         String::from("Multi-call invocation")),
+        (String::from("sha224sum"),
+         String::from("sha2 utilities")),
+        (String::from("sha256sum"),
+         String::from("sha2 utilities")),
+        (String::from("sha384sum"),
+         String::from("sha2 utilities")),
+        (String::from("sha512sum"),
+         String::from("sha2 utilities")),
+        (String::new(), String::new()), // Empty entry to signify end
     ];
 
     let mut node = program;
     let mut map_prog = infomap_0.iter();
 
-    while let Some(&(prog, n)) = map_prog.next() {
-        if prog.is_empty() || program == prog {
+    while let Some((prog, n)) = map_prog.next() {
+        if prog.is_empty() || program == prog.as_str() {
             node = n;
             break;
         }
     }
 
-    println!(
-        "{} online help: <{}>",
-        "GNU coreutils", "https://www.gnu.org/software/coreutils/"
-    );
+    println!("\n{} online help: <{}>", 
+             "GNU coreutils", 
+             "https://www.gnu.org/software/coreutils/");
 
     let lc_messages = unsafe { setlocale(5, std::ptr::null()) };
     if !lc_messages.is_null() {
@@ -261,7 +290,11 @@ fn emit_ancillary_info(program: &str) {
         if !lc_messages_str.starts_with("en_") {
             eprint!(
                 "{}",
-                "Report any translation bugs to <https://translationproject.org/team/>"
+                unsafe { 
+                    let msg = b"Report any translation bugs to <https://translationproject.org/team/>\n\0";
+                    let translated_msg = gettext(msg.as_ptr() as *const libc::c_char);
+                    std::ffi::CStr::from_ptr(translated_msg).to_string_lossy()
+                }
             );
         }
     }
@@ -269,22 +302,30 @@ fn emit_ancillary_info(program: &str) {
     let url_program = if program == "[" { "test" } else { program };
 
     println!(
-        "Full documentation <{}{}>",
-        "https://www.gnu.org/software/coreutils/", url_program
+        "{}{}",
+        unsafe { 
+            let msg = b"Full documentation <\0";
+            let translated_msg = gettext(msg.as_ptr() as *const libc::c_char);
+            std::ffi::CStr::from_ptr(translated_msg).to_string_lossy()
+        },
+        url_program
     );
 
     println!(
-        "or available locally via: info '(coreutils) {}{}'",
-        node,
-        if node == program { " invocation" } else { "" }
+        "{}",
+        unsafe { 
+            let msg = format!("or available locally via: info '(coreutils) {}{}'\n", node, if node == program { " invocation" } else { "" });
+            let translated_msg = gettext(msg.as_ptr() as *const libc::c_char);
+            std::ffi::CStr::from_ptr(translated_msg).to_string_lossy()
+        }
     );
 }
 
 #[inline]
 fn write_error() {
-    let saved_errno: i32 = std::io::Error::last_os_error().raw_os_error().unwrap_or(0);
+    let saved_errno = std::io::Error::last_os_error().raw_os_error().unwrap_or(0);
     let _ = std::io::stdout().flush();
-
+    
     if false {
         unsafe {
             error(
@@ -297,39 +338,37 @@ fn write_error() {
             unreachable!();
         }
     } else {
-        {
-            let errstatus: i32 = 1;
-            unsafe {
-                error(
-                    errstatus,
-                    saved_errno,
-                    gettext(b"write error\0".as_ptr() as *const libc::c_char),
-                );
-            }
-            if errstatus != 0 {
-                unreachable!();
-            }
+        let __errstatus = 1;
+        unsafe {
+            error(
+                __errstatus,
+                saved_errno,
+                gettext(b"write error\0".as_ptr() as *const libc::c_char),
+            );
         }
-        {
-            let errstatus: i32 = 1;
-            unsafe {
-                error(
-                    errstatus,
-                    saved_errno,
-                    gettext(b"write error\0".as_ptr() as *const libc::c_char),
-                );
-            }
-            if errstatus != 0 {
-                unreachable!();
-            }
+        if __errstatus != 0 {
+            unreachable!();
+        }
+
+        let __errstatus = 1;
+        unsafe {
+            error(
+                __errstatus,
+                saved_errno,
+                gettext(b"write error\0".as_ptr() as *const libc::c_char),
+            );
+        }
+        if __errstatus != 0 {
+            unreachable!();
         }
     }
 }
 
 #[inline]
-unsafe extern "C" fn alignfree(mut ptr: *mut libc::c_void) {
-    free(ptr);
+fn alignfree(ptr: Box<libc::c_void>) {
+    drop(ptr);
 }
+
 #[inline]
 fn __gl_stdbit_clzll(n: u64) -> i32 {
     if n != 0 {
@@ -352,29 +391,22 @@ fn io_blksize(st: &stat) -> idx_t {
         512
     };
 
-    let mut adjusted_blocksize =
-        blocksize + (IO_BUFSIZE as idx_t - 1) - (IO_BUFSIZE as idx_t - 1) % blocksize;
+    let mut adjusted_blocksize = blocksize + (IO_BUFSIZE as idx_t - 1) - (IO_BUFSIZE as idx_t - 1) % blocksize;
 
-    if (st.st_mode & 0o170000) == 0o100000 && adjusted_blocksize & (adjusted_blocksize - 1) != 0 {
-        let leading_zeros = stdc_leading_zeros_ull(adjusted_blocksize as u64) as i32;
+    if st.st_mode & 0o170000 == 0o100000 && adjusted_blocksize & (adjusted_blocksize - 1) != 0 {
+        let leading_zeros = std::mem::size_of::<idx_t>() * 8 - adjusted_blocksize.leading_zeros() as usize;
         if leading_zeros != 0 {
-            let power = 1u64 << (64 - leading_zeros);
-            if power <= i64::MAX as u64 {
+            let power = 1 << (64 - leading_zeros);
+            if power <= i64::MAX as usize {
                 adjusted_blocksize = power as idx_t;
             }
         }
     }
 
-    let max_value = if (i64::MAX as u64) < u64::MAX {
-        i64::MAX as u64
+    if adjusted_blocksize > (i64::MAX as idx_t / 2) + 1 {
+        (i64::MAX as idx_t / 2) + 1
     } else {
-        u64::MAX
-    };
-
-    if max_value.wrapping_div(2) + 1 < adjusted_blocksize as u64 {
-        (max_value.wrapping_div(2) + 1) as idx_t
-    } else {
-        adjusted_blocksize as u64 as idx_t
+        adjusted_blocksize
     }
 }
 
@@ -384,16 +416,25 @@ fn __gl_setmode(fd: i32, mode: i32) -> i32 {
 }
 
 #[inline]
-unsafe extern "C" fn set_binary_mode(mut fd: libc::c_int, mut mode: libc::c_int) -> libc::c_int {
-    return __gl_setmode(fd, mode);
+fn set_binary_mode(fd: i32, mode: i32) -> i32 {
+    __gl_setmode(fd, mode)
 }
+
 #[inline]
 fn xset_binary_mode_error() {
     // Implement the functionality that was previously unsafe or C API related.
-    // Since the original function does not have any implementation, we will assume
-    // it is meant to set some binary mode. Here we can use Rust's standard library
-    // features to achieve similar functionality if needed.
-    // For now, we will leave it empty, as the original function does nothing.
+    // For example, if this function was meant to set binary mode for a stream,
+    // we can use Rust's standard library features to achieve that.
+    
+    // Assuming we want to set binary mode for standard output as an example:
+    let stdout_handle = std::io::stdout();
+    let mut handle = stdout_handle.lock();
+    
+    // Set the output to binary mode (if applicable, depending on the platform)
+    // This is a placeholder as Rust does not have a direct equivalent for binary mode.
+    // You may need to implement specific logic based on your requirements.
+    // For example, you might want to flush the output or handle it differently.
+    handle.flush().expect("Failed to flush stdout");
 }
 
 #[inline]
@@ -429,9 +470,12 @@ static mut line_buf: [libc::c_char; 20] = [
     '\t' as i32 as libc::c_char,
     '\0' as i32 as libc::c_char,
 ];
-static mut line_num_print: *mut libc::c_char = 0 as *const libc::c_char as *mut libc::c_char;
-static mut line_num_start: *mut libc::c_char = 0 as *const libc::c_char as *mut libc::c_char;
-static mut line_num_end: *mut libc::c_char = 0 as *const libc::c_char as *mut libc::c_char;
+static mut line_num_print: *mut libc::c_char = 0 as *const libc::c_char
+    as *mut libc::c_char;
+static mut line_num_start: *mut libc::c_char = 0 as *const libc::c_char
+    as *mut libc::c_char;
+static mut line_num_end: *mut libc::c_char = 0 as *const libc::c_char
+    as *mut libc::c_char;
 static mut newlines2: libc::c_int = 0 as libc::c_int;
 static mut pending_cr: bool = 0 as libc::c_int != 0;
 #[no_mangle]
@@ -440,18 +484,23 @@ pub unsafe extern "C" fn usage(mut status: libc::c_int) {
         fprintf(
             stderr,
             gettext(
-                b"Try '%s --help' for more information.\n\0" as *const u8 as *const libc::c_char,
+                b"Try '%s --help' for more information.\n\0" as *const u8
+                    as *const libc::c_char,
             ),
             program_name,
         );
     } else {
         printf(
-            gettext(b"Usage: %s [OPTION]... [FILE]...\n\0" as *const u8 as *const libc::c_char),
+            gettext(
+                b"Usage: %s [OPTION]... [FILE]...\n\0" as *const u8
+                    as *const libc::c_char,
+            ),
             program_name,
         );
         fputs_unlocked(
             gettext(
-                b"Concatenate FILE(s) to standard output.\n\0" as *const u8 as *const libc::c_char,
+                b"Concatenate FILE(s) to standard output.\n\0" as *const u8
+                    as *const libc::c_char,
             ),
             stdout,
         );
@@ -479,8 +528,8 @@ pub unsafe extern "C" fn usage(mut status: libc::c_int) {
         );
         fputs_unlocked(
             gettext(
-                b"      --version     output version information and exit\n\0" as *const u8
-                    as *const libc::c_char,
+                b"      --version     output version information and exit\n\0"
+                    as *const u8 as *const libc::c_char,
             ),
             stdout,
         );
@@ -492,78 +541,106 @@ pub unsafe extern "C" fn usage(mut status: libc::c_int) {
             program_name,
             program_name,
         );
-        let program_str = std::ffi::CStr::from_ptr(b"cat\0".as_ptr() as *const libc::c_char)
-            .to_string_lossy()
-            .into_owned();
-        emit_ancillary_info(&program_str);
+        let program = std::ffi::CStr::from_bytes_with_nul(b"cat\0").unwrap();
+emit_ancillary_info(program.to_str().unwrap());
     }
     exit(status);
 }
 fn next_line_num() {
     unsafe {
-        let mut endp = line_num_end;
+        let mut end_index = line_num_end as usize;
         loop {
-            let fresh0 = *endp;
-            *endp = (*endp as i32 + 1) as libc::c_char;
-            if (fresh0 as i32) < ('9' as i32) {
+            let fresh0 = line_buf[end_index] as u8 as char;
+            line_buf[end_index] = (line_buf[end_index] as u8 + 1) as libc::c_char;
+            if fresh0 < '9' {
                 return;
             }
-            let fresh1 = endp;
-            endp = endp.offset(-1);
-            *fresh1 = '0' as i32 as libc::c_char;
-            if endp < line_num_start {
+            end_index -= 1;
+            line_buf[end_index + 1] = '0' as libc::c_char;
+            if end_index == line_num_start as usize {
                 break;
             }
         }
-        if line_num_start > line_buf.as_mut_ptr() {
-            line_num_start = line_num_start.offset(-1);
-            *line_num_start = '1' as i32 as libc::c_char;
+        if line_num_start as usize > line_buf.as_ptr() as usize {
+            line_num_start = (line_num_start as usize - 1) as *mut libc::c_char;
+            *line_num_start = '1' as libc::c_char;
         } else {
-            *line_buf.as_mut_ptr() = '>' as i32 as libc::c_char;
+            line_buf[0] = '>' as libc::c_char;
         }
         if line_num_start < line_num_print {
-            line_num_print = line_num_print.offset(-1);
+            line_num_print = (line_num_print as usize - 1) as *mut libc::c_char;
         }
     }
 }
 
-fn simple_cat(buf: &mut [u8]) -> bool {
+unsafe extern "C" fn simple_cat(mut buf: *mut libc::c_char, mut bufsize: idx_t) -> bool {
     loop {
-        let n_read = unsafe {
-            safe_read(
-                input_desc,
-                buf.as_mut_ptr() as *mut libc::c_void,
-                buf.len() as size_t,
-            )
-        };
-        if n_read == !(0 as libc::c_int) as size_t {
-            let errstatus: libc::c_int = 0;
-            unsafe {
+        let mut n_read: size_t = safe_read(
+            input_desc,
+            buf as *mut libc::c_void,
+            bufsize as size_t,
+        );
+        if n_read == -(1 as libc::c_int) as size_t {
+            if 0 != 0 {
                 error(
-                    errstatus,
+                    0 as libc::c_int,
                     *__errno_location(),
                     b"%s\0" as *const u8 as *const libc::c_char,
-                    quotearg_n_style_colon(0 as libc::c_int, shell_escape_quoting_style, infile),
+                    quotearg_n_style_colon(
+                        0 as libc::c_int,
+                        shell_escape_quoting_style,
+                        infile,
+                    ),
                 );
-            }
-            return false;
+                if 0 as libc::c_int != 0 as libc::c_int {
+                    unreachable!();
+                } else {};
+            } else {
+                ({
+                    let __errstatus: libc::c_int = 0 as libc::c_int;
+                    error(
+                        __errstatus,
+                        *__errno_location(),
+                        b"%s\0" as *const u8 as *const libc::c_char,
+                        quotearg_n_style_colon(
+                            0 as libc::c_int,
+                            shell_escape_quoting_style,
+                            infile,
+                        ),
+                    );
+                    if __errstatus != 0 as libc::c_int {
+                        unreachable!();
+                    } else {};
+                    
+                });
+                ({
+                    let __errstatus: libc::c_int = 0 as libc::c_int;
+                    error(
+                        __errstatus,
+                        *__errno_location(),
+                        b"%s\0" as *const u8 as *const libc::c_char,
+                        quotearg_n_style_colon(
+                            0 as libc::c_int,
+                            shell_escape_quoting_style,
+                            infile,
+                        ),
+                    );
+                    if __errstatus != 0 as libc::c_int {
+                        unreachable!();
+                    } else {};
+                    
+                });
+            };
+            return 0 as libc::c_int != 0;
         }
-        if n_read == 0 {
-            return true;
+        if n_read == 0 as libc::c_int as libc::c_ulong {
+            return 1 as libc::c_int != 0;
         }
-        unsafe {
-            if full_write(
-                1 as libc::c_int,
-                buf.as_ptr() as *const libc::c_void,
-                n_read,
-            ) != n_read
-            {
-                write_error();
-            }
+        if full_write(1 as libc::c_int, buf as *const libc::c_void, n_read) != n_read {
+            write_error();
         }
-    }
+    };
 }
-
 #[inline]
 unsafe extern "C" fn write_pending(
     mut outbuf: *mut libc::c_char,
@@ -571,11 +648,8 @@ unsafe extern "C" fn write_pending(
 ) {
     let mut n_write: idx_t = (*bpout).offset_from(outbuf) as libc::c_long;
     if (0 as libc::c_int as libc::c_long) < n_write {
-        if full_write(
-            1 as libc::c_int,
-            outbuf as *const libc::c_void,
-            n_write as size_t,
-        ) != n_write as libc::c_ulong
+        if full_write(1 as libc::c_int, outbuf as *const libc::c_void, n_write as size_t)
+            != n_write as libc::c_ulong
         {
             write_error();
         }
@@ -602,94 +676,92 @@ unsafe extern "C" fn cat(
     let mut bpout: *mut libc::c_char = outbuf;
     loop {
         let mut current_block_52: u64;
-        loop {
-            if (bpout as isize) < (outsize as isize) {
-                let mut wp: *mut i8 = outbuf;
-                let mut remaining_bytes: i64 = 0;
-                loop {
-                    if full_write(1, wp as *const libc::c_void, outsize as size_t)
-                        != outsize as libc::c_ulong
-                    {
-                        write_error();
-                    }
-                    wp = wp.offset(outsize as isize);
-                    remaining_bytes = bpout.offset_from(wp) as i64;
-                    if !(outsize as i64 <= remaining_bytes) {
-                        break;
-                    }
-                }
-                unsafe {
-                    std::ptr::copy(wp, outbuf, remaining_bytes as usize);
-                }
-                bpout = outbuf.offset(remaining_bytes as isize);
-            }
-            if bpin > eob {
-                let mut input_pending: bool = false;
-                let mut n_to_read: i32 = 0;
+loop {
+     if (outsize as usize) <= (bpout as usize - outbuf as usize) {
+    let mut wp: usize = outbuf as usize;
+    let mut remaining_bytes: isize = 0;
+    loop {
+        if full_write(1, wp as *const libc::c_void, outsize.try_into().unwrap()) != outsize.try_into().unwrap() {
+            write_error();
+        }
+        wp += outsize as usize;
+        remaining_bytes = (bpout as usize as isize - wp as isize);
+        if !(outsize <= remaining_bytes as i64) {
+            break;
+        }
+    }
+    let src = wp as *const libc::c_void;
+    let dst = outbuf as *mut libc::c_void;
+    let count = remaining_bytes as usize;
+    unsafe {
+        std::ptr::copy(src, dst, count);
+    }
+    bpout = (outbuf as usize + remaining_bytes as usize) as *mut i8;
+}
+if bpin > eob {
+    let mut input_pending: bool = false;
+let mut n_to_read: libc::c_int = 0;
 
-                if use_fionread && ioctl(input_desc, 0x541b, &mut n_to_read) < 0 {
-                    match *__errno_location() {
-                        95 | 25 | 22 | 19 | 38 => {
-                            use_fionread = false;
-                        }
-                        _ => {
-                            error(
-                                0,
-                                *__errno_location(),
-                                gettext(
-                                    b"cannot do ioctl on %s\0" as *const u8 as *const libc::c_char,
-                                ),
-                                quotearg_style(shell_escape_always_quoting_style, infile),
-                            );
-                            newlines2 = newlines;
-                            return false;
-                        }
-                    }
-                }
+if use_fionread && ioctl(input_desc, 0x541b, &mut n_to_read) < 0 {
+    match *__errno_location() {
+        95 | 25 | 22 | 19 | 38 => {
+            use_fionread = false;
+        }
+        _ => {
+            error(
+                0,
+                *__errno_location(),
+                gettext(b"cannot do ioctl on %s\0" as *const u8 as *const libc::c_char),
+                quotearg_style(shell_escape_always_quoting_style, infile),
+            );
+            newlines2 = newlines;
+            return false;
+        }
+    }
+}
 
-                if n_to_read != 0 {
-                    input_pending = true;
-                }
+if n_to_read != 0 {
+    input_pending = true;
+}
 
-                if !input_pending {
-                    write_pending(outbuf, &mut bpout);
-                }
+if !input_pending {
+    write_pending(outbuf, &mut bpout);
+}
 
-                let n_read: u64 = safe_read(
-                    input_desc,
-                    inbuf as *mut libc::c_void,
-                    insize.try_into().unwrap(),
-                );
-                if n_read == u64::MAX {
-                    error(
-                        0,
-                        *__errno_location(),
-                        b"%s\0" as *const u8 as *const libc::c_char,
-                        quotearg_n_style_colon(0, shell_escape_quoting_style, infile),
-                    );
-                    write_pending(outbuf, &mut bpout);
-                    newlines2 = newlines;
-                    return false;
-                }
+let n_read: usize = safe_read(input_desc, inbuf as *mut libc::c_void, insize as u64) as usize;
+if n_read == !(0 as libc::c_int) as usize {
+    error(
+        0,
+        *__errno_location(),
+        b"%s\0" as *const u8 as *const libc::c_char,
+        quotearg_n_style_colon(0, shell_escape_quoting_style, infile),
+    );
+    write_pending(outbuf, &mut bpout);
+    newlines2 = newlines;
+    return false;
+}
 
-                if n_read == 0 {
-                    write_pending(outbuf, &mut bpout);
-                    newlines2 = newlines;
-                    return true;
-                }
+if n_read == 0 {
+    write_pending(outbuf, &mut bpout);
+    newlines2 = newlines;
+    return true;
+}
 
-                bpin = inbuf;
-                eob = bpin.add(n_read as usize);
-                *eob = '\n' as i32 as i8;
-                current_block_52 = 6476622998065200121;
-            } else {
-                newlines += 1;
-                if newlines > 0 {
-                    if newlines >= 2 {
-                        newlines = 2;
+bpin = inbuf;
+eob = bpin.offset(n_read as isize);
+*eob = '\n' as i32 as libc::c_char;
+current_block_52 = 6476622998065200121;
+
+            
+} else {
+    newlines += 1;
+                if newlines > 0 as libc::c_int {
+                    if newlines >= 2 as libc::c_int {
+                        newlines = 2 as libc::c_int;
                         if squeeze_blank {
-                            ch = unsafe { *bpin } as u8; // Dereference the raw pointer and cast to u8
-                            bpin = bpin.add(1); // Move the pointer forward
+                            let fresh2 = bpin;
+                            bpin = bpin.offset(1);
+                            ch = *fresh2 as libc::c_uchar;
                             current_block_52 = 16658872821858055392;
                         } else {
                             current_block_52 = 15597372965620363352;
@@ -700,7 +772,7 @@ unsafe extern "C" fn cat(
                     match current_block_52 {
                         16658872821858055392 => {}
                         _ => {
-                            if number && !number_nonblank {
+                            if number as libc::c_int != 0 && !number_nonblank {
                                 next_line_num();
                                 bpout = stpcpy(bpout, line_num_print);
                             }
@@ -715,138 +787,140 @@ unsafe extern "C" fn cat(
                     _ => {
                         if show_ends {
                             if pending_cr {
-                                unsafe {
-                                    *bpout = '^' as i8;
-                                    *(bpout.add(1)) = 'M' as i8;
-                                }
-                                bpout = bpout.add(2);
-                                pending_cr = false;
+                                let fresh3 = bpout;
+                                bpout = bpout.offset(1);
+                                *fresh3 = '^' as i32 as libc::c_char;
+                                let fresh4 = bpout;
+                                bpout = bpout.offset(1);
+                                *fresh4 = 'M' as i32 as libc::c_char;
+                                pending_cr = 0 as libc::c_int != 0;
                             }
-                            unsafe {
-                                *bpout = '$' as i8;
-                            }
-                            bpout = bpout.add(1);
+                            let fresh5 = bpout;
+                            bpout = bpout.offset(1);
+                            *fresh5 = '$' as i32 as libc::c_char;
                         }
-                        unsafe {
-                            *bpout = '\n' as i8;
-                        }
-                        bpout = bpout.add(1);
+                        let fresh6 = bpout;
+                        bpout = bpout.offset(1);
+                        *fresh6 = '\n' as i32 as libc::c_char;
                         current_block_52 = 6476622998065200121;
                     }
                 }
-            }
-            match current_block_52 {
-                6476622998065200121 => {
-                    let fresh7 = bpin;
-                    bpin = bpin.offset(1);
-                    ch = *fresh7 as libc::c_uchar;
-                }
-                _ => {}
-            }
-            if !(ch as libc::c_int == '\n' as i32) {
-                break;
-            }
-        }
-        if pending_cr {
-            *bpout = '\r' as i8;
-            bpout = bpout.add(1);
-            pending_cr = false;
-        }
-        if newlines >= 0 && number {
-            next_line_num();
-            bpout = stpcpy(bpout, line_num_print);
-        }
-        if show_nonprinting {
-            loop {
-                if ch >= 32 {
-                    if ch < 127 {
-                        *bpout = ch as i8;
+            
+}
+match current_block_52 {
+    6476622998065200121 => {
+        let fresh7 = bpin;
+        bpin = bpin.offset(1);
+        ch = *fresh7 as u8;
+    }
+    _ => {}
+}
+if !(ch as i32 == '\n' as i32) {
+    break;
+}
+
+
+}
+if pending_cr {
+    *bpout = '\r' as i8;
+    bpout = bpout.add(1);
+    pending_cr = false;
+}
+if newlines >= 0 && number {
+    next_line_num();
+    bpout = stpcpy(bpout, line_num_print);
+}
+if show_nonprinting {
+    loop {
+        if ch >= 32 {
+            if ch < 127 {
+                *bpout = ch as i8;
+                bpout = bpout.add(1);
+            } else if ch == 127 {
+                *bpout = '^' as i8;
+                bpout = bpout.add(1);
+                *bpout = '?' as i8;
+                bpout = bpout.add(1);
+            } else {
+                *bpout = 'M' as i8;
+                bpout = bpout.add(1);
+                *bpout = '-' as i8;
+                if ch >= 128 + 32 {
+                    if ch < 128 + 127 {
+                        *bpout = (ch - 128) as i8;
                         bpout = bpout.add(1);
-                    } else if ch == 127 {
+                    } else {
                         *bpout = '^' as i8;
                         bpout = bpout.add(1);
                         *bpout = '?' as i8;
                         bpout = bpout.add(1);
-                    } else {
-                        *bpout = 'M' as i8;
-                        bpout = bpout.add(1);
-                        *bpout = '-' as i8;
-                        if ch >= 128 + 32 {
-                            if ch < 128 + 127 {
-                                *bpout = (ch - 128) as i8;
-                                bpout = bpout.add(1);
-                            } else {
-                                *bpout = '^' as i8;
-                                bpout = bpout.add(1);
-                                *bpout = '?' as i8;
-                                bpout = bpout.add(1);
-                            }
-                        } else {
-                            *bpout = '^' as i8;
-                            bpout = bpout.add(1);
-                            *bpout = (ch + 64) as i8;
-                            bpout = bpout.add(1);
-                        }
                     }
-                } else if ch == b'\t' && !show_tabs {
-                    *bpout = ch as i8;
-                    bpout = bpout.add(1);
-                } else if ch == b'\n' {
-                    newlines = -1;
-                    break;
                 } else {
                     *bpout = '^' as i8;
                     bpout = bpout.add(1);
-                    *bpout = (ch + 64) as i8;
+                    *bpout = (ch - 128 + 64) as i8;
                     bpout = bpout.add(1);
                 }
-                ch = *bpin as u8;
-                bpin = bpin.add(1);
+            }
+        } else if ch == b'\t' && !show_tabs {
+            *bpout = ch as i8;
+            bpout = bpout.add(1);
+        } else if ch == b'\n' {
+            newlines = -1;
+            break;
+        } else {
+            *bpout = '^' as i8;
+            bpout = bpout.add(1);
+            *bpout = (ch + 64) as i8;
+            bpout = bpout.add(1);
+        }
+        ch = *bpin as u8;
+        bpin = bpin.add(1);
+    }
+} else {
+    loop {
+        if ch == b'\t' && show_tabs {
+            *bpout = '^' as i8;
+            bpout = bpout.add(1);
+            *bpout = (ch + 64) as i8;
+            bpout = bpout.add(1);
+        } else if ch != b'\n' {
+            if ch == b'\r' && *bpin as i8 == b'\n' as i8 && show_ends {
+                if bpin == eob {
+                    pending_cr = true;
+                } else {
+                    *bpout = '^' as i8;
+                    bpout = bpout.add(1);
+                    *bpout = 'M' as i8;
+                    bpout = bpout.add(1);
+                }
+            } else {
+                *bpout = ch as i8;
+                bpout = bpout.add(1);
             }
         } else {
-            loop {
-                if ch == b'\t' && show_tabs {
-                    *bpout = '^' as i8;
-                    bpout = bpout.add(1);
-                    *bpout = (ch + 64) as i8;
-                    bpout = bpout.add(1);
-                } else if ch != b'\n' {
-                    if ch == b'\r' && *bpin as i8 == b'\n' as i8 && show_ends {
-                        if bpin == eob {
-                            pending_cr = true;
-                        } else {
-                            *bpout = '^' as i8;
-                            bpout = bpout.add(1);
-                            *bpout = 'M' as i8;
-                            bpout = bpout.add(1);
-                        }
-                    } else {
-                        *bpout = ch as i8;
-                        bpout = bpout.add(1);
-                    }
-                } else {
-                    newlines = -1;
-                    break;
-                }
-                ch = *bpin as u8;
-                bpin = bpin.add(1);
-            }
+            newlines = -1;
+            break;
         }
-        /*
-        The variables live at this point are:
-        (mut inbuf: *mut i8, mut insize: i64, mut outbuf: *mut i8, mut outsize: i64, mut show_nonprinting: bool, mut show_tabs: bool, mut number: bool, mut number_nonblank: bool, mut show_ends: bool, mut squeeze_blank: bool, mut ch: u8, mut newlines: i32, mut use_fionread: bool, mut eob: *mut i8, mut bpin: *mut i8, mut bpout: *mut i8, mut current_block_52: u64)
-        */
+        ch = *bpin as u8;
+        bpin = bpin.add(1);
     }
 }
+/*
+The variables live at this point are:
+(mut inbuf: *mut i8, mut insize: i64, mut outbuf: *mut i8, mut outsize: i64, mut show_nonprinting: bool, mut show_tabs: bool, mut number: bool, mut number_nonblank: bool, mut show_ends: bool, mut squeeze_blank: bool, mut ch: u8, mut newlines: i32, mut use_fionread: bool, mut eob: *mut i8, mut bpin: *mut i8, mut bpout: *mut i8, mut current_block_52: u64)
+*/
+
+    };
+}
 unsafe extern "C" fn copy_cat() -> libc::c_int {
-    let mut copy_max: ssize_t = (((if (9223372036854775807 as libc::c_long as libc::c_ulong)
-        < 18446744073709551615 as libc::c_ulong
+    let mut copy_max: ssize_t = (((if (9223372036854775807 as libc::c_long
+        as libc::c_ulong) < 18446744073709551615 as libc::c_ulong
     {
         9223372036854775807 as libc::c_long as libc::c_ulong
     } else {
         18446744073709551615 as libc::c_ulong
-    }) >> 30 as libc::c_int)
-        << 30 as libc::c_int) as ssize_t;
+    }) >> 30 as libc::c_int) << 30 as libc::c_int) as ssize_t;
     let mut some_copied: bool = 0 as libc::c_int != 0;
     loop {
         match rpl_copy_file_range(
@@ -882,8 +956,7 @@ unsafe extern "C" fn copy_cat() -> libc::c_int {
                     );
                     if 0 as libc::c_int != 0 as libc::c_int {
                         unreachable!();
-                    } else {
-                    };
+                    } else {};
                 } else {
                     ({
                         let __errstatus: libc::c_int = 0 as libc::c_int;
@@ -899,8 +972,8 @@ unsafe extern "C" fn copy_cat() -> libc::c_int {
                         );
                         if __errstatus != 0 as libc::c_int {
                             unreachable!();
-                        } else {
-                        };
+                        } else {};
+                        
                     });
                     ({
                         let __errstatus: libc::c_int = 0 as libc::c_int;
@@ -916,8 +989,8 @@ unsafe extern "C" fn copy_cat() -> libc::c_int {
                         );
                         if __errstatus != 0 as libc::c_int {
                             unreachable!();
-                        } else {
-                        };
+                        } else {};
+                        
                     });
                 };
                 return -(1 as libc::c_int);
@@ -925,9 +998,12 @@ unsafe extern "C" fn copy_cat() -> libc::c_int {
             _ => {}
         }
         some_copied = 1 as libc::c_int != 0;
-    }
+    };
 }
-unsafe fn main_0(mut argc: libc::c_int, mut argv: *mut *mut libc::c_char) -> libc::c_int {
+unsafe fn main_0(
+    mut argc: libc::c_int,
+    mut argv: *mut *mut libc::c_char,
+) -> libc::c_int {
     let mut insize: idx_t = 0;
     let mut inbuf: *mut libc::c_char = 0 as *mut libc::c_char;
     let mut current_block: u64;
@@ -945,18 +1021,9 @@ unsafe fn main_0(mut argc: libc::c_int, mut argv: *mut *mut libc::c_char) -> lib
         st_blksize: 0,
         __pad2: 0,
         st_blocks: 0,
-        st_atim: timespec {
-            tv_sec: 0,
-            tv_nsec: 0,
-        },
-        st_mtim: timespec {
-            tv_sec: 0,
-            tv_nsec: 0,
-        },
-        st_ctim: timespec {
-            tv_sec: 0,
-            tv_nsec: 0,
-        },
+        st_atim: timespec { tv_sec: 0, tv_nsec: 0 },
+        st_mtim: timespec { tv_sec: 0, tv_nsec: 0 },
+        st_ctim: timespec { tv_sec: 0, tv_nsec: 0 },
         __glibc_reserved: [0; 2],
     };
     let mut number: bool = 0 as libc::c_int != 0;
@@ -1147,8 +1214,7 @@ unsafe fn main_0(mut argc: libc::c_int, mut argv: *mut *mut libc::c_char) -> lib
             );
             if 1 as libc::c_int != 0 as libc::c_int {
                 unreachable!();
-            } else {
-            };
+            } else {};
         } else {
             ({
                 let __errstatus: libc::c_int = 1 as libc::c_int;
@@ -1159,8 +1225,8 @@ unsafe fn main_0(mut argc: libc::c_int, mut argv: *mut *mut libc::c_char) -> lib
                 );
                 if __errstatus != 0 as libc::c_int {
                     unreachable!();
-                } else {
-                };
+                } else {};
+                
             });
             ({
                 let __errstatus: libc::c_int = 1 as libc::c_int;
@@ -1171,24 +1237,24 @@ unsafe fn main_0(mut argc: libc::c_int, mut argv: *mut *mut libc::c_char) -> lib
                 );
                 if __errstatus != 0 as libc::c_int {
                     unreachable!();
-                } else {
-                };
+                } else {};
+                
             });
         };
     }
-    let mut outsize: idx_t = io_blksize(&stat_buf);
+    let outsize: idx_t = io_blksize(&stat_buf);
     let mut out_dev: dev_t = stat_buf.st_dev;
     let mut out_ino: ino_t = stat_buf.st_ino;
     let mut out_flags: libc::c_int = -(2 as libc::c_int);
     let mut out_isreg: bool = (stat_buf.st_mode & 0o170000 as libc::c_int as libc::c_uint
-        == 0o100000 as libc::c_int as libc::c_uint) as libc::c_int
-        != 0 as libc::c_int;
-    if !(number as libc::c_int != 0
-        || show_ends as libc::c_int != 0
+        == 0o100000 as libc::c_int as libc::c_uint) as libc::c_int != 0 as libc::c_int;
+    if !(number as libc::c_int != 0 || show_ends as libc::c_int != 0
         || squeeze_blank as libc::c_int != 0)
     {
         file_open_mode |= 0 as libc::c_int;
-        xset_binary_mode(1, 0);
+        let fd1: i32 = 1;
+let mode1: i32 = 0;
+xset_binary_mode(fd1, mode1);
     }
     infile = b"-\0" as *const u8 as *const libc::c_char;
     let mut argind: libc::c_int = optind;
@@ -1196,184 +1262,151 @@ unsafe fn main_0(mut argc: libc::c_int, mut argv: *mut *mut libc::c_char) -> lib
     let mut page_size: idx_t = getpagesize() as idx_t;
     loop {
         if argind < argc {
-            infile = *argv.offset(argind as isize);
-        }
-        let mut reading_stdin: bool =
-            strcmp(infile, b"-\0" as *const u8 as *const libc::c_char) == 0 as libc::c_int;
-        if reading_stdin {
-            have_read_stdin = 1 as libc::c_int != 0;
-            input_desc = 0 as libc::c_int;
-            if file_open_mode & 0 as libc::c_int != 0 {
-                xset_binary_mode(0, 0);
-            }
-            current_block = 13321564401369230990;
+    infile = unsafe { *argv.offset(argind as isize) };
+}
+let reading_stdin = unsafe { std::ffi::CStr::from_ptr(infile) } == std::ffi::CStr::from_bytes_with_nul(b"-\0").unwrap();
+if reading_stdin {
+    have_read_stdin = true;
+    input_desc = 0;
+    if file_open_mode & 0 != 0 {
+        xset_binary_mode(0, 0);
+    }
+    current_block = 13321564401369230990;
+} else {
+    input_desc = open(infile, file_open_mode);
+    if input_desc < 0 {
+        if 0 != 0 {
+            error(
+                0,
+                unsafe { *__errno_location() },
+                std::ffi::CStr::from_bytes_with_nul(b"%s\0").unwrap().as_ptr(),
+                quotearg_n_style_colon(0, shell_escape_quoting_style, infile),
+            );
+            unreachable!();
         } else {
-            input_desc = open(infile, file_open_mode);
-            if input_desc < 0 as libc::c_int {
-                if 0 != 0 {
-                    error(
-                        0 as libc::c_int,
-                        *__errno_location(),
-                        b"%s\0" as *const u8 as *const libc::c_char,
-                        quotearg_n_style_colon(
-                            0 as libc::c_int,
-                            shell_escape_quoting_style,
-                            infile,
-                        ),
-                    );
-                    if 0 as libc::c_int != 0 as libc::c_int {
-                        unreachable!();
-                    } else {
-                    };
-                } else {
-                    ({
-                        let __errstatus: libc::c_int = 0 as libc::c_int;
-                        error(
-                            __errstatus,
-                            *__errno_location(),
-                            b"%s\0" as *const u8 as *const libc::c_char,
-                            quotearg_n_style_colon(
-                                0 as libc::c_int,
-                                shell_escape_quoting_style,
-                                infile,
-                            ),
-                        );
-                        if __errstatus != 0 as libc::c_int {
-                            unreachable!();
-                        } else {
-                        };
-                    });
-                    ({
-                        let __errstatus: libc::c_int = 0 as libc::c_int;
-                        error(
-                            __errstatus,
-                            *__errno_location(),
-                            b"%s\0" as *const u8 as *const libc::c_char,
-                            quotearg_n_style_colon(
-                                0 as libc::c_int,
-                                shell_escape_quoting_style,
-                                infile,
-                            ),
-                        );
-                        if __errstatus != 0 as libc::c_int {
-                            unreachable!();
-                        } else {
-                        };
-                    });
-                };
-                ok = 0 as libc::c_int != 0;
-                current_block = 4567019141635105728;
-            } else {
-                current_block = 13321564401369230990;
+            let __errstatus: i32 = 0;
+            error(
+                __errstatus,
+                unsafe { *__errno_location() },
+                std::ffi::CStr::from_bytes_with_nul(b"%s\0").unwrap().as_ptr(),
+                quotearg_n_style_colon(0, shell_escape_quoting_style, infile),
+            );
+            if __errstatus != 0 {
+                unreachable!();
             }
         }
-        match current_block {
-            13321564401369230990 => {
-                if fstat(input_desc, &mut stat_buf) < 0 as libc::c_int {
-                    if 0 != 0 {
-                        error(
-                            0,
-                            std::io::Error::last_os_error().raw_os_error().unwrap_or(0),
-                            b"%s\0".as_ptr() as *const i8,
-                            quotearg_n_style_colon(0, shell_escape_quoting_style, infile),
-                        );
-                        if 0 != 0 {
-                            unreachable!();
-                        }
-                    } else {
-                        {
-                            let errstatus: i32 = 0;
-                            error(
-                                errstatus,
-                                std::io::Error::last_os_error().raw_os_error().unwrap_or(0),
-                                b"%s\0".as_ptr() as *const i8,
-                                quotearg_n_style_colon(0, shell_escape_quoting_style, infile),
-                            );
-                            if errstatus != 0 {
-                                unreachable!();
-                            }
-                        }
-                        {
-                            let errstatus: i32 = 0;
-                            error(
-                                errstatus,
-                                std::io::Error::last_os_error().raw_os_error().unwrap_or(0),
-                                b"%s\0".as_ptr() as *const i8,
-                                quotearg_n_style_colon(0, shell_escape_quoting_style, infile),
-                            );
-                            if errstatus != 0 {
-                                unreachable!();
-                            }
-                        }
-                    }
-                    ok = false;
-                } else {
-                    insize = io_blksize(&stat_buf);
-                    fdadvise(input_desc, 0, 0, FADVISE_SEQUENTIAL);
-                    if stat_buf.st_dev == out_dev && stat_buf.st_ino == out_ino {
-                        if out_flags < -1 {
-                            out_flags = rpl_fcntl(1, 3);
-                        }
-                        let mut exhausting = out_flags >= 0 && (out_flags & 0o2000) != 0;
-                        if !exhausting {
-                            let in_pos = lseek(input_desc, 0, 1);
-                            if in_pos >= 0 {
-                                exhausting = in_pos < lseek(1, 0, 1);
-                            }
-                        }
-                        if exhausting {
-                            error(
-                                0,
-                                0,
-                                gettext(
-                                    b"%s: input file is output file\0" as *const u8
-                                        as *const libc::c_char,
-                                ),
-                                quotearg_n_style_colon(0, shell_escape_quoting_style, infile),
-                            );
-                            ok = false;
-                            current_block = 7239751344758050955;
-                        } else {
-                            current_block = 5372832139739605200;
-                        }
-                    } else {
-                        current_block = 5372832139739605200;
-                    }
-                    match current_block {
-                        7239751344758050955 => {}
-                        _ => {
-                            let mut inbuf: *mut i8 = std::ptr::null_mut(); // Using a raw pointer initialized to null
-                            if !(number
-                                || show_ends
-                                || show_nonprinting
-                                || show_tabs
-                                || squeeze_blank)
-                            {
-                                let copy_cat_status =
-                                    if out_isreg && (stat_buf.st_mode & 0o170000) == 0o100000 {
-                                        copy_cat()
-                                    } else {
-                                        0
-                                    };
+        ok = false;
+        current_block = 4567019141635105728;
+    } else {
+        current_block = 13321564401369230990;
+    }
+}
+match current_block {
+    13321564401369230990 => {
+         if fstat(input_desc, &mut stat_buf) < 0 {
+     let mut ok: bool;
 
-                                if copy_cat_status != 0 {
-                                    inbuf = std::ptr::null_mut();
-                                    ok &= (0 < copy_cat_status);
-                                } else {
-                                    insize = insize.max(outsize);
-                                    let aligned_buf = xalignalloc(page_size, insize) as *mut u8;
-                                    let buf_slice = unsafe {
-                                        std::slice::from_raw_parts_mut(aligned_buf, insize as usize)
-                                    };
-                                    ok &= simple_cat(buf_slice);
-                                }
+if 0 != 0 {
+    error(
+        0,
+        std::io::Error::last_os_error().raw_os_error().unwrap_or(0),
+        b"%s\0".as_ptr() as *const i8,
+        quotearg_n_style_colon(0, shell_escape_quoting_style, infile),
+    );
+    if 0 != 0 {
+        unreachable!();
+    }
+} else {
+    {
+        let errstatus: i32 = 0;
+        error(
+            errstatus,
+            std::io::Error::last_os_error().raw_os_error().unwrap_or(0),
+            b"%s\0".as_ptr() as *const i8,
+            quotearg_n_style_colon(0, shell_escape_quoting_style, infile),
+        );
+        if errstatus != 0 {
+            unreachable!();
+        }
+    }
+    {
+        let errstatus: i32 = 0;
+        error(
+            errstatus,
+            std::io::Error::last_os_error().raw_os_error().unwrap_or(0),
+            b"%s\0".as_ptr() as *const i8,
+            quotearg_n_style_colon(0, shell_escape_quoting_style, infile),
+        );
+        if errstatus != 0 {
+            unreachable!();
+        }
+    }
+}
+ok = false;
+
+                
+} else {
+     let mut insize: i64 = io_blksize(&stat_buf);
+fdadvise(input_desc, 0, 0, FADVISE_SEQUENTIAL);
+if stat_buf.st_dev == out_dev && stat_buf.st_ino == out_ino {
+    if out_flags < -1 {
+        out_flags = rpl_fcntl(1, 3);
+    }
+    let mut exhausting: bool = out_flags >= 0 && (out_flags & 0o2000) != 0;
+    if !exhausting {
+        let in_pos: i64 = lseek(input_desc, 0, 1);
+        if in_pos >= 0 {
+            exhausting = in_pos < lseek(1, 0, 1);
+        }
+    }
+    if exhausting {
+        error(
+            0,
+            0,
+            gettext(b"%s: input file is output file\0" as *const u8 as *const libc::c_char),
+            quotearg_n_style_colon(0, shell_escape_quoting_style, infile),
+        );
+        ok = false;
+        current_block = 7239751344758050955;
+    } else {
+        current_block = 5372832139739605200;
+    }
+} else {
+    current_block = 5372832139739605200;
+}
+match current_block {
+    7239751344758050955 => {}
+    _ => {
+         inbuf = 0 as *mut libc::c_char;
+                            if !(number as libc::c_int != 0
+                                || show_ends as libc::c_int != 0
+                                || show_nonprinting as libc::c_int != 0
+                                || show_tabs as libc::c_int != 0
+                                || squeeze_blank as libc::c_int != 0)
+                            {
+                                let copy_cat_status = if out_isreg && (stat_buf.st_mode & 0o170000 == 0o100000) {
+    copy_cat()
+} else {
+    0
+};
+
+if copy_cat_status != 0 {
+    inbuf = std::ptr::null_mut();
+    ok &= (0 < copy_cat_status);
+} else {
+    insize = insize.max(outsize);
+    inbuf = xalignalloc(page_size, insize) as *mut i8;
+    ok &= simple_cat(inbuf, insize);
+}
+
                             } else {
                                 inbuf = xalignalloc(
                                     page_size,
                                     insize + 1 as libc::c_int as libc::c_long,
                                 ) as *mut libc::c_char;
                                 let mut bufsize: idx_t = 0;
-                                if (if (0 as libc::c_int as idx_t) < -(1 as libc::c_int) as idx_t
+                                if (if (0 as libc::c_int as idx_t)
+                                    < -(1 as libc::c_int) as idx_t
                                     && ((if 1 as libc::c_int != 0 {
                                         0 as libc::c_int as libc::c_long
                                     } else {
@@ -1384,8 +1417,7 @@ unsafe fn main_0(mut argc: libc::c_int, mut argv: *mut *mut libc::c_char) -> lib
                                         0 as libc::c_int
                                     } else {
                                         4 as libc::c_int
-                                    }) - 1 as libc::c_int)
-                                        < 0 as libc::c_int
+                                    }) - 1 as libc::c_int) < 0 as libc::c_int
                                     && (if (4 as libc::c_int) < 0 as libc::c_int {
                                         if insize < 0 as libc::c_int as libc::c_long {
                                             if ((if 1 as libc::c_int != 0 {
@@ -1401,32 +1433,23 @@ unsafe fn main_0(mut argc: libc::c_int, mut argv: *mut *mut libc::c_char) -> lib
                                             {
                                                 (insize
                                                     < -(1 as libc::c_int) as idx_t
-                                                        / 4 as libc::c_int as libc::c_long)
-                                                    as libc::c_int
+                                                        / 4 as libc::c_int as libc::c_long) as libc::c_int
                                             } else {
                                                 ((if (if (if ((if 1 as libc::c_int != 0 {
                                                     0 as libc::c_int
                                                 } else {
                                                     4 as libc::c_int
-                                                }) - 1 as libc::c_int)
-                                                    < 0 as libc::c_int
+                                                }) - 1 as libc::c_int) < 0 as libc::c_int
                                                 {
                                                     !(((((if 1 as libc::c_int != 0 {
                                                         0 as libc::c_int
                                                     } else {
                                                         4 as libc::c_int
                                                     }) + 1 as libc::c_int)
-                                                        << (::core::mem::size_of::<libc::c_int>()
-                                                            as libc::c_ulong)
-                                                            .wrapping_mul(
-                                                                8 as libc::c_int as libc::c_ulong,
-                                                            )
-                                                            .wrapping_sub(
-                                                                2 as libc::c_int as libc::c_ulong,
-                                                            ))
-                                                        - 1 as libc::c_int)
-                                                        * 2 as libc::c_int
-                                                        + 1 as libc::c_int)
+                                                        << (::core::mem::size_of::<libc::c_int>() as libc::c_ulong)
+                                                            .wrapping_mul(8 as libc::c_int as libc::c_ulong)
+                                                            .wrapping_sub(2 as libc::c_int as libc::c_ulong))
+                                                        - 1 as libc::c_int) * 2 as libc::c_int + 1 as libc::c_int)
                                                 } else {
                                                     (if 1 as libc::c_int != 0 {
                                                         0 as libc::c_int
@@ -1440,58 +1463,36 @@ unsafe fn main_0(mut argc: libc::c_int, mut argv: *mut *mut libc::c_char) -> lib
                                                             0 as libc::c_int
                                                         } else {
                                                             4 as libc::c_int
-                                                        }) - 1 as libc::c_int)
-                                                            < 0 as libc::c_int
+                                                        }) - 1 as libc::c_int) < 0 as libc::c_int
                                                         {
                                                             ((((if 1 as libc::c_int != 0 {
                                                                 0 as libc::c_int
                                                             } else {
                                                                 4 as libc::c_int
                                                             }) + 1 as libc::c_int)
-                                                                << (::core::mem::size_of::<
-                                                                    libc::c_int,
-                                                                >(
-                                                                )
-                                                                    as libc::c_ulong)
-                                                                    .wrapping_mul(
-                                                                        8 as libc::c_int
-                                                                            as libc::c_ulong,
-                                                                    )
-                                                                    .wrapping_sub(
-                                                                        2 as libc::c_int
-                                                                            as libc::c_ulong,
-                                                                    ))
-                                                                - 1 as libc::c_int)
-                                                                * 2 as libc::c_int
-                                                                + 1 as libc::c_int
+                                                                << (::core::mem::size_of::<libc::c_int>() as libc::c_ulong)
+                                                                    .wrapping_mul(8 as libc::c_int as libc::c_ulong)
+                                                                    .wrapping_sub(2 as libc::c_int as libc::c_ulong))
+                                                                - 1 as libc::c_int) * 2 as libc::c_int + 1 as libc::c_int
                                                         } else {
                                                             (if 1 as libc::c_int != 0 {
                                                                 0 as libc::c_int
                                                             } else {
                                                                 4 as libc::c_int
                                                             }) - 1 as libc::c_int
-                                                        }))
-                                                        as libc::c_int
+                                                        })) as libc::c_int
                                                 } else {
-                                                    ((0 as libc::c_int) < 4 as libc::c_int)
-                                                        as libc::c_int
+                                                    ((0 as libc::c_int) < 4 as libc::c_int) as libc::c_int
                                                 }) != 0
                                                 {
                                                     (if 1 as libc::c_int != 0 {
                                                         0 as libc::c_int
                                                     } else {
                                                         4 as libc::c_int
-                                                    })
-                                                        as libc::c_long
-                                                        + -(1 as libc::c_int) as idx_t
-                                                        >> (::core::mem::size_of::<libc::c_int>()
-                                                            as libc::c_ulong)
-                                                            .wrapping_mul(
-                                                                8 as libc::c_int as libc::c_ulong,
-                                                            )
-                                                            .wrapping_sub(
-                                                                1 as libc::c_int as libc::c_ulong,
-                                                            )
+                                                    }) as libc::c_long + -(1 as libc::c_int) as idx_t
+                                                        >> (::core::mem::size_of::<libc::c_int>() as libc::c_ulong)
+                                                            .wrapping_mul(8 as libc::c_int as libc::c_ulong)
+                                                            .wrapping_sub(1 as libc::c_int as libc::c_ulong)
                                                 } else {
                                                     -(1 as libc::c_int) as idx_t
                                                         / -(4 as libc::c_int) as libc::c_long
@@ -1499,70 +1500,114 @@ unsafe fn main_0(mut argc: libc::c_int, mut argv: *mut *mut libc::c_char) -> lib
                                                     as libc::c_int
                                             }
                                         } else {
-                                            if {
-                                                let condition1 = if 1 != 0 {
-                                                    0
+                                            if (if (if ((if 1 as libc::c_int != 0 {
+                                                0 as libc::c_int as libc::c_long
+                                            } else {
+                                                (if 1 as libc::c_int != 0 {
+                                                    0 as libc::c_int
                                                 } else {
-                                                    (if 1 != 0 { 0 } else { 4 }) + 0
-                                                } - 1
-                                                    < 0;
-
-                                                if condition1 {
-                                                    let inner_value = (if 1 != 0 {
-                                                        0
-                                                    } else {
-                                                        (if 1 != 0 { 0 } else { 4 }) + 0
-                                                    } + 1)
-                                                        << (std::mem::size_of::<i64>() * 8 - 2) - 1;
-                                                    !((inner_value * 2) + 1) < 0
+                                                    4 as libc::c_int
+                                                }) as libc::c_long + 0 as libc::c_int as idx_t
+                                            }) - 1 as libc::c_int as libc::c_long)
+                                                < 0 as libc::c_int as libc::c_long
+                                            {
+                                                !(((((if 1 as libc::c_int != 0 {
+                                                    0 as libc::c_int as libc::c_long
                                                 } else {
-                                                    let outer_value = if 1 != 0 {
-                                                        0
+                                                    (if 1 as libc::c_int != 0 {
+                                                        0 as libc::c_int
                                                     } else {
-                                                        (if 1 != 0 { 0 } else { 4 }) + 0
-                                                    };
-                                                    outer_value < 0
-                                                }
-                                            } {
-                                                let condition2 = {
-                                                    let inner_value =
-                                                        if 1 != 0 { 0 } else { 4 + 0 };
-                                                    inner_value < 0
-                                                        && (if 1 != 0 {
-                                                            0
+                                                        4 as libc::c_int
+                                                    }) as libc::c_long + 0 as libc::c_int as idx_t
+                                                }) + 1 as libc::c_int as libc::c_long)
+                                                    << (::core::mem::size_of::<libc::c_long>() as libc::c_ulong)
+                                                        .wrapping_mul(8 as libc::c_int as libc::c_ulong)
+                                                        .wrapping_sub(2 as libc::c_int as libc::c_ulong))
+                                                    - 1 as libc::c_int as libc::c_long)
+                                                    * 2 as libc::c_int as libc::c_long
+                                                    + 1 as libc::c_int as libc::c_long)
+                                            } else {
+                                                (if 1 as libc::c_int != 0 {
+                                                    0 as libc::c_int as libc::c_long
+                                                } else {
+                                                    (if 1 as libc::c_int != 0 {
+                                                        0 as libc::c_int
+                                                    } else {
+                                                        4 as libc::c_int
+                                                    }) as libc::c_long + 0 as libc::c_int as idx_t
+                                                }) + 0 as libc::c_int as libc::c_long
+                                            }) < 0 as libc::c_int as libc::c_long
+                                            {
+                                                (((if 1 as libc::c_int != 0 {
+                                                    0 as libc::c_int
+                                                } else {
+                                                    4 as libc::c_int
+                                                }) as libc::c_long + 0 as libc::c_int as idx_t)
+                                                    < -(if ((if 1 as libc::c_int != 0 {
+                                                        0 as libc::c_int as libc::c_long
+                                                    } else {
+                                                        (if 1 as libc::c_int != 0 {
+                                                            0 as libc::c_int
                                                         } else {
-                                                            (if 1 != 0 { 0 } else { 4 }) + 0
-                                                        } - 1
-                                                            < 0)
-                                                };
-
-                                                if condition2 {
-                                                    let inner_value = (if 1 != 0 {
-                                                        0
+                                                            4 as libc::c_int
+                                                        }) as libc::c_long + 0 as libc::c_int as idx_t
+                                                    }) - 1 as libc::c_int as libc::c_long)
+                                                        < 0 as libc::c_int as libc::c_long
+                                                    {
+                                                        ((((if 1 as libc::c_int != 0 {
+                                                            0 as libc::c_int as libc::c_long
+                                                        } else {
+                                                            (if 1 as libc::c_int != 0 {
+                                                                0 as libc::c_int
+                                                            } else {
+                                                                4 as libc::c_int
+                                                            }) as libc::c_long + 0 as libc::c_int as idx_t
+                                                        }) + 1 as libc::c_int as libc::c_long)
+                                                            << (::core::mem::size_of::<libc::c_long>() as libc::c_ulong)
+                                                                .wrapping_mul(8 as libc::c_int as libc::c_ulong)
+                                                                .wrapping_sub(2 as libc::c_int as libc::c_ulong))
+                                                            - 1 as libc::c_int as libc::c_long)
+                                                            * 2 as libc::c_int as libc::c_long
+                                                            + 1 as libc::c_int as libc::c_long
                                                     } else {
-                                                        (if 1 != 0 { 0 } else { 4 }) + 0
-                                                    } + 1)
-                                                        << (std::mem::size_of::<i64>() * 8 - 2) - 1;
-                                                    inner_value * 2 + 1
+                                                        (if 1 as libc::c_int != 0 {
+                                                            0 as libc::c_int as libc::c_long
+                                                        } else {
+                                                            (if 1 as libc::c_int != 0 {
+                                                                0 as libc::c_int
+                                                            } else {
+                                                                4 as libc::c_int
+                                                            }) as libc::c_long + 0 as libc::c_int as idx_t
+                                                        }) - 1 as libc::c_int as libc::c_long
+                                                    })) as libc::c_int
+                                            } else {
+                                                ((0 as libc::c_int as libc::c_long)
+                                                    < (if 1 as libc::c_int != 0 {
+                                                        0 as libc::c_int
+                                                    } else {
+                                                        4 as libc::c_int
+                                                    }) as libc::c_long + 0 as libc::c_int as idx_t)
+                                                    as libc::c_int
+                                            }) != 0 && 4 as libc::c_int == -(1 as libc::c_int)
+                                            {
+                                                if ((if 1 as libc::c_int != 0 {
+                                                    0 as libc::c_int as libc::c_long
                                                 } else {
-                                                    (if 1 != 0 {
-                                                        0
-                                                    } else {
-                                                        (if 1 != 0 { 0 } else { 4 }) + 0
-                                                    } - 1)
+                                                    insize
+                                                }) - 1 as libc::c_int as libc::c_long)
+                                                    < 0 as libc::c_int as libc::c_long
+                                                {
+                                                    ((0 as libc::c_int as libc::c_long)
+                                                        < insize + 0 as libc::c_int as idx_t) as libc::c_int
+                                                } else {
+                                                    ((0 as libc::c_int as libc::c_long) < insize
+                                                        && (-(1 as libc::c_int) as libc::c_long
+                                                            - 0 as libc::c_int as idx_t)
+                                                            < insize - 1 as libc::c_int as libc::c_long) as libc::c_int
                                                 }
                                             } else {
-                                                if (0 < (if 1 != 0 { 0 } else { 4 } + 0))
-                                                    && (4 == -1)
-                                                {
-                                                    if (if 1 != 0 { 0 } else { insize } - 1) < 0 {
-                                                        (0 < insize + 0) as i32
-                                                    } else {
-                                                        (0 < insize && (-1 - 0) < insize - 1) as i32
-                                                    }
-                                                } else {
-                                                    (0 / 4 < insize) as i32
-                                                }
+                                                ((0 as libc::c_int as idx_t
+                                                    / 4 as libc::c_int as libc::c_long) < insize) as libc::c_int
                                             }
                                         }
                                     } else {
@@ -1590,14 +1635,9 @@ unsafe fn main_0(mut argc: libc::c_int, mut argv: *mut *mut libc::c_char) -> lib
                                                             insize
                                                         }) + 0 as libc::c_int as idx_t
                                                     }) + 1 as libc::c_int as libc::c_long)
-                                                        << (::core::mem::size_of::<libc::c_long>()
-                                                            as libc::c_ulong)
-                                                            .wrapping_mul(
-                                                                8 as libc::c_int as libc::c_ulong,
-                                                            )
-                                                            .wrapping_sub(
-                                                                2 as libc::c_int as libc::c_ulong,
-                                                            ))
+                                                        << (::core::mem::size_of::<libc::c_long>() as libc::c_ulong)
+                                                            .wrapping_mul(8 as libc::c_int as libc::c_ulong)
+                                                            .wrapping_sub(2 as libc::c_int as libc::c_ulong))
                                                         - 1 as libc::c_int as libc::c_long)
                                                         * 2 as libc::c_int as libc::c_long
                                                         + 1 as libc::c_int as libc::c_long)
@@ -1626,8 +1666,7 @@ unsafe fn main_0(mut argc: libc::c_int, mut argv: *mut *mut libc::c_char) -> lib
                                                             } else {
                                                                 insize
                                                             }) + 0 as libc::c_int as idx_t
-                                                        }) - 1 as libc::c_int
-                                                            as libc::c_long)
+                                                        }) - 1 as libc::c_int as libc::c_long)
                                                             < 0 as libc::c_int as libc::c_long
                                                         {
                                                             ((((if 1 as libc::c_int != 0 {
@@ -1638,21 +1677,10 @@ unsafe fn main_0(mut argc: libc::c_int, mut argv: *mut *mut libc::c_char) -> lib
                                                                 } else {
                                                                     insize
                                                                 }) + 0 as libc::c_int as idx_t
-                                                            }) + 1 as libc::c_int
-                                                                as libc::c_long)
-                                                                << (::core::mem::size_of::<
-                                                                    libc::c_long,
-                                                                >(
-                                                                )
-                                                                    as libc::c_ulong)
-                                                                    .wrapping_mul(
-                                                                        8 as libc::c_int
-                                                                            as libc::c_ulong,
-                                                                    )
-                                                                    .wrapping_sub(
-                                                                        2 as libc::c_int
-                                                                            as libc::c_ulong,
-                                                                    ))
+                                                            }) + 1 as libc::c_int as libc::c_long)
+                                                                << (::core::mem::size_of::<libc::c_long>() as libc::c_ulong)
+                                                                    .wrapping_mul(8 as libc::c_int as libc::c_ulong)
+                                                                    .wrapping_sub(2 as libc::c_int as libc::c_ulong))
                                                                 - 1 as libc::c_int as libc::c_long)
                                                                 * 2 as libc::c_int as libc::c_long
                                                                 + 1 as libc::c_int as libc::c_long
@@ -1666,58 +1694,49 @@ unsafe fn main_0(mut argc: libc::c_int, mut argv: *mut *mut libc::c_char) -> lib
                                                                     insize
                                                                 }) + 0 as libc::c_int as idx_t
                                                             }) - 1 as libc::c_int as libc::c_long
-                                                        }))
-                                                        as libc::c_int
+                                                        })) as libc::c_int
                                                 } else {
                                                     ((0 as libc::c_int as libc::c_long)
                                                         < (if 1 as libc::c_int != 0 {
                                                             0 as libc::c_int as libc::c_long
                                                         } else {
                                                             insize
-                                                        }) + 0 as libc::c_int as idx_t)
-                                                        as libc::c_int
-                                                }) != 0
-                                                    && insize == -(1 as libc::c_int) as libc::c_long
+                                                        }) + 0 as libc::c_int as idx_t) as libc::c_int
+                                                }) != 0 && insize == -(1 as libc::c_int) as libc::c_long
                                                 {
                                                     if ((if 1 as libc::c_int != 0 {
                                                         0 as libc::c_int
                                                     } else {
                                                         4 as libc::c_int
-                                                    }) - 1 as libc::c_int)
-                                                        < 0 as libc::c_int
+                                                    }) - 1 as libc::c_int) < 0 as libc::c_int
                                                     {
                                                         ((0 as libc::c_int as libc::c_long)
                                                             < 4 as libc::c_int as libc::c_long
-                                                                + 0 as libc::c_int as idx_t)
-                                                            as libc::c_int
+                                                                + 0 as libc::c_int as idx_t) as libc::c_int
                                                     } else {
                                                         ((-(1 as libc::c_int) as libc::c_long
                                                             - 0 as libc::c_int as idx_t)
-                                                            < (4 as libc::c_int - 1 as libc::c_int)
-                                                                as libc::c_long)
+                                                            < (4 as libc::c_int - 1 as libc::c_int) as libc::c_long)
                                                             as libc::c_int
                                                     }
                                                 } else {
                                                     (0 as libc::c_int as idx_t / insize
-                                                        < 4 as libc::c_int as libc::c_long)
-                                                        as libc::c_int
+                                                        < 4 as libc::c_int as libc::c_long) as libc::c_int
                                                 }
                                             } else {
                                                 ((-(1 as libc::c_int) as idx_t
-                                                    / 4 as libc::c_int as libc::c_long)
-                                                    < insize)
-                                                    as libc::c_int
+                                                    / 4 as libc::c_int as libc::c_long) < insize) as libc::c_int
                                             }
                                         }
                                     }) != 0
                                 {
-                                    let (fresh33, _fresh34) =
-                                        insize.overflowing_mul((4 as libc::c_int).into());
+                                    let (fresh33, _fresh34) = insize
+                                        .overflowing_mul((4 as libc::c_int).into());
                                     *(&mut bufsize as *mut idx_t) = fresh33;
                                     1 as libc::c_int
                                 } else {
-                                    let (fresh35, fresh36) =
-                                        insize.overflowing_mul((4 as libc::c_int).into());
+                                    let (fresh35, fresh36) = insize
+                                        .overflowing_mul((4 as libc::c_int).into());
                                     *(&mut bufsize as *mut idx_t) = fresh35;
                                     fresh36 as libc::c_int
                                 }) != 0
@@ -1727,17 +1746,18 @@ unsafe fn main_0(mut argc: libc::c_int, mut argv: *mut *mut libc::c_char) -> lib
                                         fresh38 as libc::c_int != 0
                                     }
                                     || {
-                                        let (fresh39, fresh40) = bufsize.overflowing_add(
-                                            (20 as libc::c_int - 1 as libc::c_int).into(),
-                                        );
+                                        let (fresh39, fresh40) = bufsize
+                                            .overflowing_add((20 as libc::c_int - 1 as libc::c_int).into());
                                         *(&mut bufsize as *mut idx_t) = fresh39;
                                         fresh40 as libc::c_int != 0
                                     }
                                 {
                                     xalloc_die();
                                 }
-                                let mut outbuf: *mut libc::c_char =
-                                    xalignalloc(page_size, bufsize) as *mut libc::c_char;
+                                let mut outbuf: *mut libc::c_char = xalignalloc(
+                                    page_size,
+                                    bufsize,
+                                ) as *mut libc::c_char;
                                 ok = (ok as libc::c_int
                                     & cat(
                                         inbuf,
@@ -1750,75 +1770,73 @@ unsafe fn main_0(mut argc: libc::c_int, mut argv: *mut *mut libc::c_char) -> lib
                                         number_nonblank,
                                         show_ends,
                                         squeeze_blank,
-                                    ) as libc::c_int)
-                                    != 0;
-                                alignfree(outbuf as *mut libc::c_void);
+                                    ) as libc::c_int) != 0;
+                                let outbuf_box = Box::from_raw(outbuf as *mut libc::c_void);
+alignfree(outbuf_box);
                             }
-                            alignfree(inbuf as *mut libc::c_void); // Assuming alignfree can accept a pointer from Vec
-                        }
-                    }
-                }
-                if !reading_stdin && close(input_desc) < 0 as libc::c_int {
-                    if 0 != 0 {
-                        error(
-                            0 as libc::c_int,
-                            *__errno_location(),
-                            b"%s\0" as *const u8 as *const libc::c_char,
-                            quotearg_n_style_colon(
-                                0 as libc::c_int,
-                                shell_escape_quoting_style,
-                                infile,
-                            ),
-                        );
-                        if 0 as libc::c_int != 0 as libc::c_int {
-                            unreachable!();
-                        } else {
-                        };
-                    } else {
-                        ({
-                            let __errstatus: libc::c_int = 0 as libc::c_int;
-                            error(
-                                __errstatus,
-                                *__errno_location(),
-                                b"%s\0" as *const u8 as *const libc::c_char,
-                                quotearg_n_style_colon(
-                                    0 as libc::c_int,
-                                    shell_escape_quoting_style,
-                                    infile,
-                                ),
-                            );
-                            if __errstatus != 0 as libc::c_int {
-                                unreachable!();
-                            } else {
-                            };
-                        });
-                        ({
-                            let __errstatus: libc::c_int = 0 as libc::c_int;
-                            error(
-                                __errstatus,
-                                *__errno_location(),
-                                b"%s\0" as *const u8 as *const libc::c_char,
-                                quotearg_n_style_colon(
-                                    0 as libc::c_int,
-                                    shell_escape_quoting_style,
-                                    infile,
-                                ),
-                            );
-                            if __errstatus != 0 as libc::c_int {
-                                unreachable!();
-                            } else {
-                            };
-                        });
-                    };
-                    ok = 0 as libc::c_int != 0;
-                }
-            }
-            _ => {}
-        }
-        argind += 1;
-        if !(argind < argc) {
-            break;
-        }
+                            let inbuf_box = Box::from_raw(inbuf as *mut libc::c_void);
+alignfree(inbuf_box);
+
+    }
+}
+
+                
+}
+if !reading_stdin {
+    if close(input_desc) < 0 {
+        if 0 != 0 {
+            error(
+                0,
+                std::io::Error::last_os_error().raw_os_error().unwrap_or(0),
+                b"%s\0" as *const u8 as *const libc::c_char,
+                quotearg_n_style_colon(0, shell_escape_quoting_style, infile),
+            );
+            if 0 != 0 {
+                unreachable!();
+            } else {}
+        } else {
+            ({
+                let __errstatus: i32 = 0;
+                error(
+                    __errstatus,
+                    std::io::Error::last_os_error().raw_os_error().unwrap_or(0),
+                    b"%s\0" as *const u8 as *const libc::c_char,
+                    quotearg_n_style_colon(0, shell_escape_quoting_style, infile),
+                );
+                if __errstatus != 0 {
+                    unreachable!();
+                } else {}
+            });
+            ({
+                let __errstatus: i32 = 0;
+                error(
+                    __errstatus,
+                    std::io::Error::last_os_error().raw_os_error().unwrap_or(0),
+                    b"%s\0" as *const u8 as *const libc::c_char,
+                    quotearg_n_style_colon(0, shell_escape_quoting_style, infile),
+                );
+                if __errstatus != 0 {
+                    unreachable!();
+                } else {}
+            });
+        };
+        ok = false;
+    }
+}
+/*
+The variables live at this point are:
+(mut insize: i64, mut inbuf: *mut i8, mut current_block: u64, mut stat_buf: stat, mut number: bool, mut number_nonblank: bool, mut squeeze_blank: bool, mut show_ends: bool, mut show_nonprinting: bool, mut show_tabs: bool, outsize: i64, mut out_dev: u64, mut out_ino: u64, mut out_flags: i32, mut out_isreg: bool, mut ok: bool, mut page_size: i64, mut reading_stdin: bool)
+*/
+
+
+    }
+    _ => {}
+}
+argind += 1;
+if !(argind < argc) {
+    break;
+}
+
     }
     if pending_cr {
         if full_write(
@@ -1830,62 +1848,80 @@ unsafe fn main_0(mut argc: libc::c_int, mut argv: *mut *mut libc::c_char) -> lib
             write_error();
         }
     }
-    if have_read_stdin && close(0) < 0 {
-        if true {
+    if have_read_stdin as libc::c_int != 0 && close(0 as libc::c_int) < 0 as libc::c_int
+    {
+        if 0 != 0 {
             error(
-                1,
+                1 as libc::c_int,
                 *__errno_location(),
                 gettext(b"closing standard input\0" as *const u8 as *const libc::c_char),
             );
-            unreachable!();
+            if 1 as libc::c_int != 0 as libc::c_int {
+                unreachable!();
+            } else {};
         } else {
-            let errstatus = 1;
-            error(
-                errstatus,
-                *__errno_location(),
-                gettext(b"closing standard input\0" as *const u8 as *const libc::c_char),
-            );
-            if errstatus != 0 {
-                unreachable!();
-            }
-
-            let errstatus = 1;
-            error(
-                errstatus,
-                *__errno_location(),
-                gettext(b"closing standard input\0" as *const u8 as *const libc::c_char),
-            );
-            if errstatus != 0 {
-                unreachable!();
-            }
-        }
+            ({
+                let __errstatus: libc::c_int = 1 as libc::c_int;
+                error(
+                    __errstatus,
+                    *__errno_location(),
+                    gettext(
+                        b"closing standard input\0" as *const u8 as *const libc::c_char,
+                    ),
+                );
+                if __errstatus != 0 as libc::c_int {
+                    unreachable!();
+                } else {};
+                
+            });
+            ({
+                let __errstatus: libc::c_int = 1 as libc::c_int;
+                error(
+                    __errstatus,
+                    *__errno_location(),
+                    gettext(
+                        b"closing standard input\0" as *const u8 as *const libc::c_char,
+                    ),
+                );
+                if __errstatus != 0 as libc::c_int {
+                    unreachable!();
+                } else {};
+                
+            });
+        };
     }
-    return if ok { 0 } else { 1 };
+    return if ok as libc::c_int != 0 { 0 as libc::c_int } else { 1 as libc::c_int };
 }
 pub fn main() {
-    let mut args: Vec<*mut libc::c_char> = Vec::new();
-    for arg in ::std::env::args() {
-        args.push(
-            (::std::ffi::CString::new(arg))
-                .expect("Failed to convert argument into CString.")
-                .into_raw(),
-        );
-    }
-    args.push(::core::ptr::null_mut());
-    unsafe {
-        ::std::process::exit(main_0(
-            (args.len() - 1) as libc::c_int,
-            args.as_mut_ptr() as *mut *mut libc::c_char,
-        ) as i32)
-    }
-}
-unsafe extern "C" fn run_static_initializers() {
-    let line_buf_slice = &mut line_buf[..];
-    line_num_print = line_buf_slice.as_mut_ptr().offset(12); // 20 - 8
-    line_num_start = line_buf_slice.as_mut_ptr().offset(17); // 20 - 3
-    line_num_end = line_buf_slice.as_mut_ptr().offset(17); // 20 - 3
+    let args: Vec<String> = ::std::env::args().collect();
+    let argc = args.len() as libc::c_int;
+    let argv: Vec<CString> = args.iter()
+        .map(|arg| CString::new(arg.as_str()).expect("Failed to convert argument into CString."))
+        .collect();
+
+    let argv_ptr: Vec<*const libc::c_char> = argv.iter()
+        .map(|cstr| cstr.as_ptr())
+        .chain(std::iter::once(std::ptr::null()))
+        .collect();
+
+    let exit_code = unsafe { main_0(argc, argv_ptr.as_ptr() as *mut *mut libc::c_char) } as i32;
+    ::std::process::exit(exit_code);
 }
 
+unsafe extern "C" fn run_static_initializers() {
+    line_num_print = line_buf
+        .as_mut_ptr()
+        .offset(20 as libc::c_int as isize)
+        .offset(-(8 as libc::c_int as isize));
+    line_num_start = line_buf
+        .as_mut_ptr()
+        .offset(20 as libc::c_int as isize)
+        .offset(-(3 as libc::c_int as isize));
+    line_num_end = line_buf
+        .as_mut_ptr()
+        .offset(20 as libc::c_int as isize)
+        .offset(-(3 as libc::c_int as isize));
+}
 #[used]
 #[cfg_attr(target_os = "linux", link_section = ".init_array")]
 #[cfg_attr(target_os = "windows", link_section = ".CRT$XIB")]

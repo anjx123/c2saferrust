@@ -1,3 +1,4 @@
+use std::sync::Mutex;
 
 use std::ffi::CString;
 
@@ -64,19 +65,20 @@ pub type C2RustUnnamed = libc::c_uint;
 static mut file_name: *const libc::c_char = 0 as *const libc::c_char;
 #[no_mangle]
 pub fn close_stdout_set_file_name(file: &str) {
-    let c_string = std::ffi::CString::new(file).unwrap();
+    let c_string = std::ffi::CString::new(file).expect("CString::new failed");
     unsafe {
         file_name = c_string.as_ptr();
-        std::mem::forget(c_string); // Prevent CString from being dropped
     }
 }
 
 static mut ignore_EPIPE: bool = false;
 #[no_mangle]
 pub fn close_stdout_set_ignore_EPIPE(ignore: bool) {
-    unsafe {
-        ignore_EPIPE = ignore;
-    }
+    // Use a Mutex to safely modify the static variable
+    static IGNORE_EPIPE: Mutex<bool> = Mutex::new(false);
+    
+    let mut ignore_e_pipe = IGNORE_EPIPE.lock().unwrap();
+    *ignore_e_pipe = ignore;
 }
 
 #[no_mangle]

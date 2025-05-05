@@ -391,13 +391,19 @@ pub const ABDAY_2: C2RustUnnamed = 131073;
 pub const ABDAY_1: C2RustUnnamed = 131072;
 #[no_mangle]
 pub fn locale_charset() -> String {
-    let codeset_ptr: *const libc::c_char = unsafe { nl_langinfo(CODESET as libc::c_int) };
-    let codeset = unsafe { CStr::from_ptr(codeset_ptr) };
+    let codeset = unsafe { nl_langinfo(CODESET as libc::c_int) };
     
-    if codeset.to_bytes().is_empty() {
+    if codeset.is_null() {
         return "ASCII".to_string();
     }
-    
-    codeset.to_string_lossy().into_owned()
+
+    let codeset_str = unsafe { std::ffi::CStr::from_ptr(codeset) };
+    let codeset_string = codeset_str.to_string_lossy();
+
+    if codeset_string.is_empty() {
+        return "ASCII".to_string();
+    }
+
+    codeset_string.into_owned()
 }
 
